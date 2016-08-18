@@ -6,8 +6,9 @@ module.exports = {
     ChildClass.prototype.constructor = ChildClass;
   },
 
-  alien: 'images/invader_red.gif',
+  alien: 'images/green_invader.png',
   ship: 'images/galaga.png',
   shipBullet: 'images/green_bullet.png',
-  alienBullet: 'images/red_bullet.png'
+  alienBullet: 'images/red_bullet.png',
+  background: 'images/space.jpg'
 };

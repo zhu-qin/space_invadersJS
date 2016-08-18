@@ -70,6 +70,9 @@
 	  this.alienRight = {x: 4, y: 0};
 	  this.alienLeft = {x: -4, y: 0};
 	  this.bulletRadius = 5;
+	  this.backgroundImage = new Image();
+	  this.backgroundImage.src = Utils.background;
+	
 	}
 	
 	
@@ -99,11 +102,16 @@
 	};
 	
 	Game.prototype.drawAll = function (){
+	  this.drawBackground();
 	  let allObjects = this.aliens.concat(this.ship, this.shipBullets, this.alienBullets);
 	  allObjects.forEach((obj) => {
 	    obj.draw();
-	    obj.showImage();
 	  });
+	
+	};
+	
+	Game.prototype.drawBackground = function () {
+	  this.ctx.drawImage(this.backgroundImage, 0, 0);
 	};
 	
 	Game.prototype.moveAliensRight = function (){
@@ -211,19 +219,6 @@
 	
 	let game = new Game(ctx);
 	
-	// game.makeAliens();
-	// game.makeShip();
-	// game.drawAll();
-	
-	// alien = new Alien({x_pos: 400, y_pos: 760, radius: 30, image:'images/alien.png', game: game});
-	// alien.showImage();
-	
-	// var img = new Image();
-	// img.src = 'images/space.png';
-	// img.onload = function () {
-	//
-	// ctx.drawImage(img, 400,400);};
-	
 	game.play();
 
 
@@ -328,10 +323,11 @@
 	    ChildClass.prototype.constructor = ChildClass;
 	  },
 	
-	  alien: 'images/invader_red.gif',
+	  alien: 'images/green_invader.png',
 	  ship: 'images/galaga.png',
 	  shipBullet: 'images/green_bullet.png',
-	  alienBullet: 'images/red_bullet.png'
+	  alienBullet: 'images/red_bullet.png',
+	  background: 'images/space.jpg'
 	};
 
 

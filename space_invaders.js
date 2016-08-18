@@ -24,6 +24,9 @@ function Game(ctx){
   this.alienRight = {x: 4, y: 0};
   this.alienLeft = {x: -4, y: 0};
   this.bulletRadius = 5;
+  this.backgroundImage = new Image();
+  this.backgroundImage.src = Utils.background;
+
 }
 
 
@@ -53,11 +56,16 @@ Game.prototype.clear = function () {
 };
 
 Game.prototype.drawAll = function (){
+  this.drawBackground();
   let allObjects = this.aliens.concat(this.ship, this.shipBullets, this.alienBullets);
   allObjects.forEach((obj) => {
     obj.draw();
-    obj.showImage();
   });
+
+};
+
+Game.prototype.drawBackground = function () {
+  this.ctx.drawImage(this.backgroundImage, 0, 0);
 };
 
 Game.prototype.moveAliensRight = function (){
@@ -164,18 +172,5 @@ Game.prototype.play = function (){
 };
 
 let game = new Game(ctx);
-
-// game.makeAliens();
-// game.makeShip();
-// game.drawAll();
-
-// alien = new Alien({x_pos: 400, y_pos: 760, radius: 30, image:'images/alien.png', game: game});
-// alien.showImage();
-
-// var img = new Image();
-// img.src = 'images/space.png';
-// img.onload = function () {
-//
-// ctx.drawImage(img, 400,400);};
 
 game.play();
