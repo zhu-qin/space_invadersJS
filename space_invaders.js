@@ -1,40 +1,35 @@
 const Alien = require('./moving_aliens');
 const Ship = require('./moving_ship');
 const Bullet = require('./moving_bullets');
+const Utils = require('./utils');
 
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
+ctx.strokeStyle = "transparent";
 
 function Game(ctx){
   this.aliens = [];
   this.wall = [];
-  this.bullets = [];
+  this.shipBullets = [];
+  this.alienBullets = [];
+  this.ship = [];
   this.counter = 0;
   this.ctx = ctx;
   this.hoverGap = 40;
-  this.shipBullet = {x:0, y: -3};
+  this.bulletFrequency = 200;
+  this.alienBullet = {x: 0, y: 15};
+  this.shipBullet = {x: 0, y: -25};
   this.shipRight = {x: 10, y: 0};
   this.shipLeft = {x: -10, y: 0};
   this.alienRight = {x: 4, y: 0};
   this.alienLeft = {x: -4, y: 0};
   this.bulletRadius = 5;
-  this.ship = [new Ship({x_pos: 400, y_pos: 760, radius: 30, game: this})];
 }
 
 
-Game.prototype.add = function (obj) {
-  if (obj instanceof Alien) {
-    this.aliens.push(obj);
-  } else if (obj instanceof Bullet) {
-    this.bullets.push(obj);
-  } else if (obj instanceof Ship) {
-    this.ship.push(obj);
-  }
-};
-
 Game.prototype.makeShip = function () {
-  let ship = new Ship({x_pos: 400, y_pos: 760, radius: 30, game: this});
-  this.add(ship);
+  let ship = new Ship({x_pos: 400, y_pos: 760, radius: 25, game: this, image: Utils.ship});
+  this.ship.push(ship);
 };
 
 
@@ -45,9 +40,10 @@ Game.prototype.makeAliens = function (){
         x_pos: i,
         y_pos: j,
         radius: 20,
-        game: this
+        game: this,
+        image: Utils.alien
       });
-      this.add(alien);
+      this.aliens.push(alien);
     }
   }
 };
@@ -57,9 +53,10 @@ Game.prototype.clear = function () {
 };
 
 Game.prototype.drawAll = function (){
-  let allObjects = this.aliens.concat(this.wall, this.ship, this.bullets)
+  let allObjects = this.aliens.concat(this.ship, this.shipBullets, this.alienBullets);
   allObjects.forEach((obj) => {
-    obj.draw(this.ctx);
+    obj.draw();
+    obj.showImage();
   });
 };
 
@@ -88,25 +85,97 @@ Game.prototype.moveAliens = function (){
   }
 };
 
-Game.prototype.moveBullets = function (){
-  this.bullets.forEach((bullet) => {
+Game.prototype.moveShipBullets = function (){
+  this.shipBullets.forEach((bullet) => {
     bullet.moveObj(this.shipBullet);
   });
 };
 
+Game.prototype.moveAlienBullets = function (){
+  this.alienBullets.forEach((bullet) => {
+    bullet.moveObj(this.alienBullet);
+  });
+};
+
+Game.prototype.setAlienFire = function () {
+
+  let alienFire = function () {
+    let alien = Math.floor(Math.random()*this.aliens.length);
+    this.aliens[alien].fire();
+  }.bind(this);
+
+  setInterval(alienFire, this.bulletFrequency);
+};
+
+Game.prototype.checkShipCollision = function (){
+  this.alienBullets.forEach((bullet, alienIndex)=>{
+    if (bullet.collideWith(this.ship[0])){
+      this.ship.splice(0, 1);
+      this.alienBullets.splice(alienIndex, 1);
+    }
+  });
+};
+
+Game.prototype.checkAlienCollision = function (){
+  this.shipBullets.forEach((bullet, bulletIndex)=>{
+    this.aliens.forEach((alien, alienIndex) => {
+      if(bullet.collideWith(alien)){
+        this.aliens.splice(alienIndex, 1);
+        this.shipBullets.splice(bulletIndex, 1);
+      }
+    });
+  });
+};
+
+Game.prototype.gameWon = function () {
+  if (this.aliens.length === 0) {
+    clearInterval(this.timer);
+    return true;
+  }
+};
+
+Game.prototype.gameLost = function () {
+
+  if (this.ship.length === 0) {
+    clearInterval(this.timer);
+    return true;
+  }
+};
+
+
 Game.prototype.moveAll = function () {
   this.clear();
   this.ship[0].activateShip();
-  this.moveBullets();
+  this.moveAlienBullets();
+  this.moveShipBullets();
   this.moveAliens();
+  this.checkShipCollision();
+  this.checkAlienCollision();
+  this.gameWon();
+  this.gameLost();
   this.drawAll();
 };
 
 Game.prototype.play = function (){
-  setInterval(this.moveAll.bind(this), 70);
+  this.makeAliens();
+  this.makeShip();
+  this.setAlienFire();
+  this.timer = setInterval(this.moveAll.bind(this), 60);
 };
 
 let game = new Game(ctx);
 
-game.makeAliens();
+// game.makeAliens();
+// game.makeShip();
+// game.drawAll();
+
+// alien = new Alien({x_pos: 400, y_pos: 760, radius: 30, image:'images/alien.png', game: game});
+// alien.showImage();
+
+// var img = new Image();
+// img.src = 'images/space.png';
+// img.onload = function () {
+//
+// ctx.drawImage(img, 400,400);};
+
 game.play();

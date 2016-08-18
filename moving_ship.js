@@ -7,6 +7,7 @@ function Ship(params){
   this.leftPressed = false;
   this.rightPresed = false;
   this.spacePressed = false;
+  this.timeOut = 0;
   MovingObject.call(this, params);
   this.startShip();
 }
@@ -37,6 +38,7 @@ Ship.prototype._handleKeyUp = function(e) {
     this.rightPresed = false;
   }
   if (e.keyCode === 32){
+    this.timeOut = 0;
     this.spacePressed = false;
   }
 };
@@ -46,8 +48,9 @@ Ship.prototype.fire = function () {
   params.x_pos = this.x_pos;
   params.y_pos = this.y_pos;
   params.game = this.game;
+  params.image = Utils.shipBullet;
   let bullet = new Bullet(params);
-  this.game.add(bullet);
+  this.game.shipBullets.push(bullet);
 
 };
 
@@ -63,7 +66,11 @@ Ship.prototype.activateShip = function () {
     this.moveObj(this.game.shipRight);
   }
   if (this.spacePressed === true) {
-    this.fire();
+    this.timeOut = this.timeOut % 10;
+    if (this.timeOut % 10 === 0){
+      this.fire();
+    }
+    this.timeOut += 1;
   }
 };
 
