@@ -48,7 +48,7 @@ Ship.prototype.fire = function () {
   params.x_pos = this.x_pos;
   params.y_pos = this.y_pos;
   params.game = this.game;
-  params.image = Utils.shipBullet;
+  params.image = Utils.shipBulletImage;
   let bullet = new Bullet(params);
   this.game.shipBullets.push(bullet);
 
@@ -58,7 +58,7 @@ Ship.prototype.startShip = function () {
   this.addListeners();
 };
 
-Ship.prototype.activateShip = function () {
+Ship.prototype.moveShip = function () {
   if (this.leftPressed === true) {
     this.moveObj(this.game.shipLeft);
   }

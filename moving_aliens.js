@@ -14,7 +14,7 @@ Alien.prototype.fire = function () {
   params.x_pos = this.x_pos;
   params.y_pos = this.y_pos;
   params.game = this.game;
-  params.image = Utils.alienBullet;
+  params.image = Utils.alienBulletImage;
   let bullet = new Bullet(params);
   this.game.alienBullets.push(bullet);
 
