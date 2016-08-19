@@ -59,11 +59,11 @@ Ship.prototype.startShip = function () {
 };
 
 Ship.prototype.moveShip = function () {
-  if (this.leftPressed === true) {
-    this.moveObj(this.game.shipLeft);
+  if (this.leftPressed === true && this.x_pos > this.radius) {
+    this.moveObj(Utils.shipLeft);
   }
-  if (this.rightPresed === true) {
-    this.moveObj(this.game.shipRight);
+  if (this.rightPresed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
+    this.moveObj(Utils.shipRight);
   }
   if (this.spacePressed === true) {
     this.timeOut = this.timeOut % 10;

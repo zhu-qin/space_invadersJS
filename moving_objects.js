@@ -1,3 +1,5 @@
+Utils = require('./utils');
+
 function MovingObject(params) {
   this.image = new Image();
   this.image.src = params.image;
@@ -17,7 +19,7 @@ MovingObject.prototype.draw = function (){
 };
 
 MovingObject.prototype.showImage = function () {
-    this.game.ctx.drawImage(this.image, this.x_pos, this.y_pos, 50, 50);
+    this.game.ctx.drawImage(this.image, this.x_pos - Utils.offsetObject , this.y_pos - Utils.offsetObject, 50, 50);
 };
 
 MovingObject.prototype.moveObj = function (vector){

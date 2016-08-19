@@ -44,15 +44,29 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Alien = __webpack_require__(1);
-	const Ship = __webpack_require__(5);
-	const Bullet = __webpack_require__(3);
-	const Utils = __webpack_require__(4);
-	const Explosion = __webpack_require__(6);
+	const Game = __webpack_require__(1);
 	
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	ctx.strokeStyle = "transparent";
+	
+	let game = new Game(ctx);
+	
+	
+	game.play();
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Alien = __webpack_require__(2);
+	const SpecialAlien = __webpack_require__(8);
+	const Ship = __webpack_require__(6);
+	const Bullet = __webpack_require__(5);
+	const Utils = __webpack_require__(4);
+	const MovingObject = __webpack_require__(3);
+	const Explosion = __webpack_require__(7);
 	
 	function Game(ctx){
 	  this.aliens = [];
@@ -60,21 +74,19 @@
 	  this.shipBullets = [];
 	  this.alienBullets = [];
 	  this.ship = [];
+	  this.shipLives = [];
 	  this.specialAliens = [];
 	  this.explosions = [];
 	  this.counter = 0;
 	  this.ctx = ctx;
-	  this.hoverGap = 40;
-	  this.alienBullet = {x: 0, y: 15};
-	  this.shipBullet = {x: 0, y: -25};
-	  this.shipRight = {x: 10, y: 0};
-	  this.shipLeft = {x: -10, y: 0};
-	  this.bulletRadius = 3;
+	  this.shipHealth = Utils.shipHealth;
+	  this.score = 0;
+	  this.scoreArray= [];
 	  this.backgroundImage = new Image();
 	  this.backgroundImage.src = Utils.background;
-	
 	}
 	
+	// draw methods
 	
 	Game.prototype.makeShip = function () {
 	  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Utils.ship});
@@ -84,8 +96,8 @@
 	Game.prototype.makeExplosion = function (pos) {
 	  let explode = new Explosion({
 	    pos: pos,
-	    frameWidth: 64,
-	    frameHeight: 64,
+	    frameWidth: 128,
+	    frameHeight: 128,
 	    frameX: 0,
 	    frameY: 0,
 	    game: this,
@@ -94,10 +106,29 @@
 	  this.explosions.push(explode);
 	};
 	
+	Game.prototype.makeLives = function () {
+	  for (let i = 1; i <= this.shipHealth; i += 1) {
+	    let shipLife = new MovingObject({
+	      x_pos: this.ctx.canvas.width - i*50,
+	      y_pos: 40,
+	      radius: 2,
+	      image: 'images/galaga.png',
+	      game: this
+	    });
+	    this.shipLives.push(shipLife);
+	  }
+	};
+	
+	Game.prototype.drawScore = function (){
+	    this.ctx.font = "48px serif";
+	    this.ctx.fillStyle = "#fff";
+	    this.ctx.fillText(`Score: ${this.score}`, 10, 40);
+	
+	};
 	
 	Game.prototype.makeAliens = function (){
 	  for (let i = 100; i <= 800 ;i += 120) {
-	    for (let j = 50; j <= 250; j += 50){
+	    for (let j = 100; j <= 300; j += 50){
 	      let alien = new Alien({
 	        x_pos: i,
 	        y_pos: j,
@@ -115,23 +146,22 @@
 	  let x = Math.floor(Math.random()*1.9)*800;
 	  let y = Math.random()*400 + 200;
 	
-	  let alien = new Alien({
-	    x_pos: x,
-	    y_pos: y,
-	    radius: 20,
-	    game: this,
-	    image: Utils.specialAlien
+	  let alienLeft = new SpecialAlien({
+	    x_pos: 0 - Utils.alienRadius,
+	    y_pos: Math.random()*200 + 300,
+	    move_x: Utils.specialAlienMove,
+	    game: this
 	  });
-	  let specialAlienMove;
-	  if (x === 0) {
-	     specialAlienMove = alien.moveObj.bind(alien, Utils.specialAlienRight);
-	  } else {
-	    specialAlienMove = alien.moveObj.bind(alien, Utils.specialAlienLeft);
-	  }
 	
+	  let alienRight = new SpecialAlien({
+	    x_pos: this.ctx.canvas.width + Utils.alienRadius,
+	    y_pos: Math.random()*200 + 300,
+	    move_x: -Utils.specialAlienMove,
+	    game: this
+	  });
 	
-	  this.special.push(specialAlienMove);
-	  this.specialAliens.push(alien);
+	  this.aliens.push(alienLeft);
+	  this.aliens.push(alienRight);
 	};
 	
 	Game.prototype.clear = function () {
@@ -140,7 +170,16 @@
 	
 	Game.prototype.drawAll = function (){
 	  this.drawBackground();
-	  let allObjects = this.aliens.concat(this.ship, this.shipBullets, this.alienBullets, this.explosions, this.specialAliens);
+	  this.drawScore();
+	  let allObjects = this.aliens.concat(
+	    this.ship,
+	    this.shipBullets,
+	    this.alienBullets,
+	    this.explosions,
+	    this.shipLives,
+	    this.scoreArray,
+	    this.specialAliens
+	  );
 	  allObjects.forEach((obj) => {
 	    obj.draw();
 	  });
@@ -154,11 +193,15 @@
 	  this.aliens.forEach((alien) => {
 	    alien.moveObj(alienMove);
 	  });
+	
+	  this.specialAliens.forEach((special) => {
+	    special.moveObj();
+	  });
 	};
 	
 	
 	Game.prototype.wobbleAliens = function (){
-	  let gap = this.hoverGap;
+	  let gap = Utils.hoverGap;
 	  if (this.counter >= gap/2) {
 	    this.counter += 1;
 	    this.counter = this.counter%gap;
@@ -171,6 +214,8 @@
 	  if (this.counter === gap -1 ) {
 	    this.moveAliens(Utils.alienDown);
 	  }
+	
+	
 	};
 	
 	Game.prototype.moveShipBullets = function (){
@@ -190,17 +235,27 @@
 	  let alienFire = function () {
 	    let index = Math.floor(Math.random()*this.aliens.length);
 	    this.aliens[index].fire();
+	
+	    this.aliens.forEach((alien) => {
+	      if (alien instanceof SpecialAlien) {
+	        alien.fire();
+	      }
+	    });
+	
 	  }.bind(this);
 	
 	  setInterval(alienFire, Utils.bulletFrequency);
 	};
 	
+	
+	
 	Game.prototype.checkShipCollision = function (){
 	  this.alienBullets.forEach((bullet, alienIndex)=>{
 	    if (bullet.collideWith(this.ship[0])){
-	      this.makeExplosion({x: this.ship[0].x_pos, y: this.ship[0].y_pos});
+	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
 	      this.ship.splice(0, 1);
 	      this.alienBullets.splice(alienIndex, 1);
+	      this.shipLives.pop();
 	      this.makeShip();
 	
 	    }
@@ -212,27 +267,34 @@
 	    this.aliens.forEach((alien, alienIndex) => {
 	      if(bullet.collideWith(alien)){
 	        this.aliens.splice(alienIndex, 1);
+	        if (alien instanceof SpecialAlien) {
+	          this.makeSpecialAlien();
+	        }
 	        this.shipBullets.splice(bulletIndex, 1);
-	        this.makeExplosion({x: alien.x_pos, y: alien.y_pos});
+	        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
+	        this.score += 10;
 	      }
 	    });
 	  });
 	};
 	
 	Game.prototype.gameWon = function () {
-	  if (this.aliens.length === 0) {
+	  if (this.aliens.length < 5) {
+	    this.makeAliens();
 	    // clearInterval(this.timer);
 	    return true;
 	  }
 	};
 	
 	Game.prototype.gameLost = function () {
-	
-	  if (this.ship.length === 0) {
-	    // clearInterval(this.timer);
+	  if (this.shipLives.length === 0) {
+	    clearInterval(this.timer);
+	    this.clear();
 	    return true;
 	  }
 	};
+	
+	
 	
 	
 	Game.prototype.moveAll = function () {
@@ -249,24 +311,23 @@
 	};
 	
 	Game.prototype.play = function (){
+	  this.makeLives();
 	  this.makeAliens();
+	  this.makeSpecialAlien();
 	  this.makeShip();
 	  this.setAlienFire();
 	  this.timer = setInterval(this.moveAll.bind(this), 60);
 	};
 	
-	
-	let game = new Game(ctx);
-	
-	game.play();
+	module.exports = Game;
 
 
 /***/ },
-/* 1 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const MovingObject = __webpack_require__(2);
-	const Bullet = __webpack_require__(3);
+	const MovingObject = __webpack_require__(3);
+	const Bullet = __webpack_require__(5);
 	const Utils = __webpack_require__(4);
 	
 	function Alien(params) {
@@ -292,9 +353,11 @@
 
 
 /***/ },
-/* 2 */
-/***/ function(module, exports) {
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
 
+	Utils = __webpack_require__(4);
+	
 	function MovingObject(params) {
 	  this.image = new Image();
 	  this.image.src = params.image;
@@ -314,7 +377,7 @@
 	};
 	
 	MovingObject.prototype.showImage = function () {
-	    this.game.ctx.drawImage(this.image, this.x_pos, this.y_pos, 50, 50);
+	    this.game.ctx.drawImage(this.image, this.x_pos - Utils.offsetObject , this.y_pos - Utils.offsetObject, 50, 50);
 	};
 	
 	MovingObject.prototype.moveObj = function (vector){
@@ -334,23 +397,6 @@
 
 
 /***/ },
-/* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const MovingObject = __webpack_require__(2);
-	const Util = __webpack_require__(4);
-	
-	function Bullet(params) {
-	  params.radius = params.game.bulletRadius;
-	  MovingObject.call(this, params);
-	}
-	
-	Util.inherits(Bullet, MovingObject);
-	
-	module.exports = Bullet;
-
-
-/***/ },
 /* 4 */
 /***/ function(module, exports) {
 
@@ -363,28 +409,41 @@
 	  },
 	
 	  alien: 'images/green_invader.png',
-	  specialAlien: 'red_invader.png',
+	  specialAlienImage: 'images/red_invader.png',
 	  ship: 'images/galaga.png',
 	  shipBulletImage: 'images/green_bullet.png',
 	  alienBulletImage: 'images/red_bullet.png',
 	  background: 'images/space.jpg',
 	
-	
+	  // animations
 	  explosion: 'images/explosion.png',
+	
+	  // alien options
+	  alienRadius: 20,
+	  specialAlienMove: 4,
 	
 	
 	
 	  alienRight: {x: 4, y: 0},
 	  alienLeft: {x: -4, y: 0},
-	  alienDown: {x: 0, y: 8},
+	  alienDown: {x: 0, y: 16},
 	
 	  alienBullet: {x: 0, y: 15},
 	  shipBullet: {x: 0, y: -25},
 	  shipRight: {x: 10, y: 0},
 	  shipLeft: {x: -10, y: 0},
 	
+	  hoverGap: 40,
+	  bulletRadius: 3,
+	  bulletFrequency: 400,
+	  offsetObject: 25,
+	  offsetExplosion: 50,
 	
-	  bulletFrequency: 200
+	  // ship options
+	  shipHealth: 5
+	
+	
+	
 	};
 
 
@@ -392,8 +451,25 @@
 /* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const MovingObject = __webpack_require__(2);
-	const Bullet = __webpack_require__(3);
+	const MovingObject = __webpack_require__(3);
+	const Utils = __webpack_require__(4);
+	
+	function Bullet(params) {
+	  params.radius = Utils.bulletRadius;
+	  MovingObject.call(this, params);
+	}
+	
+	Utils.inherits(Bullet, MovingObject);
+	
+	module.exports = Bullet;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const MovingObject = __webpack_require__(3);
+	const Bullet = __webpack_require__(5);
 	const Utils = __webpack_require__(4);
 	
 	
@@ -453,11 +529,11 @@
 	};
 	
 	Ship.prototype.moveShip = function () {
-	  if (this.leftPressed === true) {
-	    this.moveObj(this.game.shipLeft);
+	  if (this.leftPressed === true && this.x_pos > this.radius) {
+	    this.moveObj(Utils.shipLeft);
 	  }
-	  if (this.rightPresed === true) {
-	    this.moveObj(this.game.shipRight);
+	  if (this.rightPresed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
+	    this.moveObj(Utils.shipRight);
 	  }
 	  if (this.spacePressed === true) {
 	    this.timeOut = this.timeOut % 10;
@@ -475,7 +551,7 @@
 
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports) {
 
 	function Explosion(params){
@@ -492,29 +568,63 @@
 	
 	
 	Explosion.prototype.draw = function (){
+	  this.ctx.drawImage(
+	    this.image,
+	    this.frameX,
+	    this.frameY,
+	    this.frameWidth,
+	    this.frameHeight,
+	    this.pos.x,
+	    this.pos.y,
+	    this.frameWidth,
+	    this.frameHeight
+	  );
 	
-	  this.ctx.drawImage(this.image, this.frameX, this.frameY, this.frameWidth, this.frameHeight,
-	                    this.pos.x, this.pos.y, this.frameWidth, this.frameHeight);
+	  this.frameX += this.frameWidth;
 	
-	                    this.frameX += this.frameWidth;
+	  if (this.frameX >= 640) {
+	    this.frameX = 0;
+	    this.frameY += this.frameHeight;
+	  }
+	  // do this later
+	  if (this.frameY > 1152) {
+	    this.game.explosions.forEach((explode,index) => {
+	      if (explode.pos.x === this.pos.x && explode.pos.y === this.pos.y) {
+	        this.game.explosions.splice(index, 1);
+	      }
+	    });
+	  }
 	
-	
-	                    if (this.frameX >= 320) {
-	                      this.frameX = 0;
-	                      this.frameY += this.frameHeight;
-	                    }
-	
-	                    if (this.frameY >= 320) {
-	                      this.game.explosions;
-	                    }
-	
-	};
-	
-	Explosion.prototype.animate = function (){
-	  this.explode = setInterval(this.draw.bind(this), 50);
 	};
 	
 	module.exports = Explosion;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Alien = __webpack_require__(2);
+	const Utils = __webpack_require__(4);
+	
+	function SpecialAlien(params){
+	  this.game = params.game;
+	  this.image = new Image();
+	  this.image.src = Utils.specialAlienImage;
+	  this.radius = Utils.alienRadius;
+	  this.x_pos = params.x_pos;
+	  this.y_pos = params.y_pos;
+	  this.move_x = params.move_x;
+	
+	}
+	
+	Utils.inherits(SpecialAlien, Alien);
+	
+	SpecialAlien.prototype.moveObj = function () {
+	  this.x_pos += this.move_x;
+	};
+	
+	module.exports = SpecialAlien;
 
 
 /***/ }

@@ -1,11 +1,11 @@
 const MovingObject = require("./moving_objects");
-const Util = require("./utils");
+const Utils = require("./utils");
 
 function Bullet(params) {
-  params.radius = params.game.bulletRadius;
+  params.radius = Utils.bulletRadius;
   MovingObject.call(this, params);
 }
 
-Util.inherits(Bullet, MovingObject);
+Utils.inherits(Bullet, MovingObject);
 
 module.exports = Bullet;
