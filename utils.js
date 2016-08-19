@@ -18,7 +18,7 @@ module.exports = {
 
   // alien options
   alienRadius: 20,
-  specialAlienMove: 4,
+  specialAlienMove: 5,
 
 
 

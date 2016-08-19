@@ -50,9 +50,9 @@
 	var ctx = canvas.getContext('2d');
 	ctx.strokeStyle = "transparent";
 	
+	
+	
 	let game = new Game(ctx);
-	
-	
 	game.play();
 
 
@@ -214,8 +214,6 @@
 	  if (this.counter === gap -1 ) {
 	    this.moveAliens(Utils.alienDown);
 	  }
-	
-	
 	};
 	
 	Game.prototype.moveShipBullets = function (){
@@ -231,7 +229,6 @@
 	};
 	
 	Game.prototype.setAlienFire = function () {
-	
 	  let alienFire = function () {
 	    let index = Math.floor(Math.random()*this.aliens.length);
 	    this.aliens[index].fire();
@@ -241,13 +238,10 @@
 	        alien.fire();
 	      }
 	    });
-	
 	  }.bind(this);
-	
+	  
 	  setInterval(alienFire, Utils.bulletFrequency);
 	};
-	
-	
 	
 	Game.prototype.checkShipCollision = function (){
 	  this.alienBullets.forEach((bullet, alienIndex)=>{
@@ -257,7 +251,6 @@
 	      this.alienBullets.splice(alienIndex, 1);
 	      this.shipLives.pop();
 	      this.makeShip();
-	
 	    }
 	  });
 	};
@@ -268,7 +261,7 @@
 	      if(bullet.collideWith(alien)){
 	        this.aliens.splice(alienIndex, 1);
 	        if (alien instanceof SpecialAlien) {
-	          this.makeSpecialAlien();
+	          this.score += 50;
 	        }
 	        this.shipBullets.splice(bulletIndex, 1);
 	        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
@@ -280,8 +273,7 @@
 	
 	Game.prototype.gameWon = function () {
 	  if (this.aliens.length < 5) {
-	    this.makeAliens();
-	    // clearInterval(this.timer);
+	    clearInterval(this.timer);
 	    return true;
 	  }
 	};
@@ -293,9 +285,6 @@
 	    return true;
 	  }
 	};
-	
-	
-	
 	
 	Game.prototype.moveAll = function () {
 	  this.clear();
@@ -316,6 +305,8 @@
 	  this.makeSpecialAlien();
 	  this.makeShip();
 	  this.setAlienFire();
+	  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
+	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
 	  this.timer = setInterval(this.moveAll.bind(this), 60);
 	};
 	
@@ -420,7 +411,7 @@
 	
 	  // alien options
 	  alienRadius: 20,
-	  specialAlienMove: 4,
+	  specialAlienMove: 5,
 	
 	
 	

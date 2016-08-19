@@ -152,8 +152,6 @@ Game.prototype.wobbleAliens = function (){
   if (this.counter === gap -1 ) {
     this.moveAliens(Utils.alienDown);
   }
-
-
 };
 
 Game.prototype.moveShipBullets = function (){
@@ -169,7 +167,6 @@ Game.prototype.moveAlienBullets = function (){
 };
 
 Game.prototype.setAlienFire = function () {
-
   let alienFire = function () {
     let index = Math.floor(Math.random()*this.aliens.length);
     this.aliens[index].fire();
@@ -179,13 +176,10 @@ Game.prototype.setAlienFire = function () {
         alien.fire();
       }
     });
-
   }.bind(this);
-
+  
   setInterval(alienFire, Utils.bulletFrequency);
 };
-
-
 
 Game.prototype.checkShipCollision = function (){
   this.alienBullets.forEach((bullet, alienIndex)=>{
@@ -195,7 +189,6 @@ Game.prototype.checkShipCollision = function (){
       this.alienBullets.splice(alienIndex, 1);
       this.shipLives.pop();
       this.makeShip();
-
     }
   });
 };
@@ -206,7 +199,7 @@ Game.prototype.checkAlienCollision = function (){
       if(bullet.collideWith(alien)){
         this.aliens.splice(alienIndex, 1);
         if (alien instanceof SpecialAlien) {
-          this.makeSpecialAlien();
+          this.score += 50;
         }
         this.shipBullets.splice(bulletIndex, 1);
         this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
@@ -218,8 +211,7 @@ Game.prototype.checkAlienCollision = function (){
 
 Game.prototype.gameWon = function () {
   if (this.aliens.length < 5) {
-    this.makeAliens();
-    // clearInterval(this.timer);
+    clearInterval(this.timer);
     return true;
   }
 };
@@ -231,9 +223,6 @@ Game.prototype.gameLost = function () {
     return true;
   }
 };
-
-
-
 
 Game.prototype.moveAll = function () {
   this.clear();
@@ -254,6 +243,8 @@ Game.prototype.play = function (){
   this.makeSpecialAlien();
   this.makeShip();
   this.setAlienFire();
+  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
+  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
   this.timer = setInterval(this.moveAll.bind(this), 60);
 };
 
