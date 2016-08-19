@@ -81,7 +81,8 @@
 	  this.ctx = ctx;
 	  this.shipHealth = Utils.shipHealth;
 	  this.score = 0;
-	  this.scoreArray= [];
+	  this.scoreArray = [];
+	  this.intervals = [];
 	  this.backgroundImage = new Image();
 	  this.backgroundImage.src = Utils.background;
 	}
@@ -239,8 +240,9 @@
 	      }
 	    });
 	  }.bind(this);
-	  
-	  setInterval(alienFire, Utils.bulletFrequency);
+	
+	  this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
+	  this.intervals.push(this.alienFire);
 	};
 	
 	Game.prototype.checkShipCollision = function (){
@@ -272,16 +274,19 @@
 	};
 	
 	Game.prototype.gameWon = function () {
-	  if (this.aliens.length < 5) {
-	    clearInterval(this.timer);
+	  if (this.aliens.length === 0) {
+	    this.intervals.forEach((int) => {
+	      clearInterval(int);
+	    });
 	    return true;
 	  }
 	};
 	
 	Game.prototype.gameLost = function () {
 	  if (this.shipLives.length === 0) {
-	    clearInterval(this.timer);
-	    this.clear();
+	    this.intervals.forEach((int) => {
+	      clearInterval(int);
+	    });
 	    return true;
 	  }
 	};
@@ -308,6 +313,9 @@
 	  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
 	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
 	  this.timer = setInterval(this.moveAll.bind(this), 60);
+	  this.intervals.push(this.regularSpawn);
+	  this.intervals.push(this.specialSpawn);
+	  this.intervals.push(this.timer);
 	};
 	
 	module.exports = Game;
