@@ -45,15 +45,19 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const Game = __webpack_require__(1);
+	const Images = __webpack_require__(9);
 	
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	ctx.strokeStyle = "transparent";
 	
 	
-	
-	let game = new Game(ctx);
-	game.play();
+	setTimeout( function () {
+	  if (Images.loaded) {
+	    let game = new Game(ctx);
+	    game.play();
+	  }
+	}, 100);
 
 
 /***/ },
@@ -61,12 +65,13 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const Alien = __webpack_require__(2);
-	const SpecialAlien = __webpack_require__(8);
-	const Ship = __webpack_require__(6);
+	const SpecialAlien = __webpack_require__(6);
+	const Ship = __webpack_require__(7);
 	const Bullet = __webpack_require__(5);
 	const Utils = __webpack_require__(4);
 	const MovingObject = __webpack_require__(3);
-	const Explosion = __webpack_require__(7);
+	const Explosion = __webpack_require__(8);
+	const Images = __webpack_require__(9);
 	
 	function Game(ctx){
 	  this.aliens = [];
@@ -83,14 +88,13 @@
 	  this.score = 0;
 	  this.scoreArray = [];
 	  this.intervals = [];
-	  this.backgroundImage = new Image();
-	  this.backgroundImage.src = Utils.background;
+	  this.backgroundImage = Images.background;
 	}
 	
 	// draw methods
 	
 	Game.prototype.makeShip = function () {
-	  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Utils.ship});
+	  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Images.ship});
 	  this.ship.push(ship);
 	};
 	
@@ -102,7 +106,6 @@
 	    frameX: 0,
 	    frameY: 0,
 	    game: this,
-	    image_src: Utils.explosion
 	  });
 	  this.explosions.push(explode);
 	};
@@ -113,7 +116,7 @@
 	      x_pos: this.ctx.canvas.width - i*50,
 	      y_pos: 40,
 	      radius: 2,
-	      image: 'images/galaga.png',
+	      image: Images.ship,
 	      game: this
 	    });
 	    this.shipLives.push(shipLife);
@@ -135,7 +138,7 @@
 	        y_pos: j,
 	        radius: 20,
 	        game: this,
-	        image: Utils.alien
+	        image: Images.green_invader
 	      });
 	      this.aliens.push(alien);
 	    }
@@ -187,6 +190,7 @@
 	};
 	
 	Game.prototype.drawBackground = function () {
+	
 	  this.ctx.drawImage(this.backgroundImage, 0, 0);
 	};
 	
@@ -318,6 +322,12 @@
 	  this.intervals.push(this.timer);
 	};
 	
+	Game.prototype.start = function () {
+	  if (Images.loaded) {
+	    this.play();
+	  }
+	};
+	
 	module.exports = Game;
 
 
@@ -327,6 +337,7 @@
 
 	const MovingObject = __webpack_require__(3);
 	const Bullet = __webpack_require__(5);
+	const Images = __webpack_require__(9);
 	const Utils = __webpack_require__(4);
 	
 	function Alien(params) {
@@ -338,10 +349,10 @@
 	
 	Alien.prototype.fire = function () {
 	  let params = {};
+	  params.image = Images.alien_bullet;
 	  params.x_pos = this.x_pos;
 	  params.y_pos = this.y_pos;
 	  params.game = this.game;
-	  params.image = Utils.alienBulletImage;
 	  let bullet = new Bullet(params);
 	  this.game.alienBullets.push(bullet);
 	
@@ -358,8 +369,7 @@
 	Utils = __webpack_require__(4);
 	
 	function MovingObject(params) {
-	  this.image = new Image();
-	  this.image.src = params.image;
+	  this.image = params.image;
 	  this.x_pos = params.x_pos;
 	  this.y_pos = params.y_pos;
 	  this.game = params.game;
@@ -406,16 +416,6 @@
 	    ChildClass.prototype = new Surrogate();
 	    ChildClass.prototype.constructor = ChildClass;
 	  },
-	
-	  alien: 'images/green_invader.png',
-	  specialAlienImage: 'images/red_invader.png',
-	  ship: 'images/galaga.png',
-	  shipBulletImage: 'images/green_bullet.png',
-	  alienBulletImage: 'images/red_bullet.png',
-	  background: 'images/space.jpg',
-	
-	  // animations
-	  explosion: 'images/explosion.png',
 	
 	  // alien options
 	  alienRadius: 20,
@@ -467,8 +467,36 @@
 /* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
+	const Alien = __webpack_require__(2);
+	const Images = __webpack_require__(9);
+	const Utils = __webpack_require__(4);
+	
+	function SpecialAlien(params){
+	  this.game = params.game;
+	  this.image = Images.red_invader;
+	  this.radius = Utils.alienRadius;
+	  this.x_pos = params.x_pos;
+	  this.y_pos = params.y_pos;
+	  this.move_x = params.move_x;
+	
+	}
+	
+	Utils.inherits(SpecialAlien, Alien);
+	
+	SpecialAlien.prototype.moveObj = function () {
+	  this.x_pos += this.move_x;
+	};
+	
+	module.exports = SpecialAlien;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
 	const MovingObject = __webpack_require__(3);
 	const Bullet = __webpack_require__(5);
+	const Images = __webpack_require__(9);
 	const Utils = __webpack_require__(4);
 	
 	
@@ -517,7 +545,7 @@
 	  params.x_pos = this.x_pos;
 	  params.y_pos = this.y_pos;
 	  params.game = this.game;
-	  params.image = Utils.shipBulletImage;
+	  params.image = Images.ship_bullet;
 	  let bullet = new Bullet(params);
 	  this.game.shipBullets.push(bullet);
 	
@@ -543,16 +571,15 @@
 	  }
 	};
 	
-	
-	
-	
 	module.exports = Ship;
 
 
 /***/ },
-/* 7 */
-/***/ function(module, exports) {
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
 
+	const Images = __webpack_require__(9);
+	
 	function Explosion(params){
 	  this.pos = params.pos;
 	  this.frameWidth = params.frameWidth;
@@ -561,8 +588,7 @@
 	  this.ctx = params.game.ctx;
 	  this.frameX = params.frameX;
 	  this.frameY = params.frameY;
-	  this.image = new Image();
-	  this.image.src = params.image_src;
+	  this.image = Images.explosion;
 	}
 	
 	
@@ -600,30 +626,33 @@
 
 
 /***/ },
-/* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/* 9 */
+/***/ function(module, exports) {
 
-	const Alien = __webpack_require__(2);
-	const Utils = __webpack_require__(4);
+	var images = {
+	  loading: 0,
+	  loaded: false
+	};
+	function addImages(imagesArray){
 	
-	function SpecialAlien(params){
-	  this.game = params.game;
-	  this.image = new Image();
-	  this.image.src = Utils.specialAlienImage;
-	  this.radius = Utils.alienRadius;
-	  this.x_pos = params.x_pos;
-	  this.y_pos = params.y_pos;
-	  this.move_x = params.move_x;
-	
+	    imagesArray.forEach((imageName)=>{
+	      let img = new Image();
+	      img.onload = function () {
+	        images[imageName] = img;
+	        images.loading += 1;
+	        if (images.loading === imagesArray.length) {
+	          images.loaded = true;
+	        }
+	      };
+	      img.src = `space_invaders_game/images/${imageName}.png`;
+	    });
 	}
 	
-	Utils.inherits(SpecialAlien, Alien);
+	let imageFiles = ['background','explosion','ship', 'ship_bullet', 'intro', 'red_invader', 'alien_bullet', 'green_invader'];
 	
-	SpecialAlien.prototype.moveObj = function () {
-	  this.x_pos += this.move_x;
-	};
+	addImages(imageFiles);
 	
-	module.exports = SpecialAlien;
+	module.exports = images;
 
 
 /***/ }

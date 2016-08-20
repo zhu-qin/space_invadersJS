@@ -6,16 +6,6 @@ module.exports = {
     ChildClass.prototype.constructor = ChildClass;
   },
 
-  alien: 'images/green_invader.png',
-  specialAlienImage: 'images/red_invader.png',
-  ship: 'images/galaga.png',
-  shipBulletImage: 'images/green_bullet.png',
-  alienBulletImage: 'images/red_bullet.png',
-  background: 'images/space.jpg',
-
-  // animations
-  explosion: 'images/explosion.png',
-
   // alien options
   alienRadius: 20,
   specialAlienMove: 5,

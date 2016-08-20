@@ -1,5 +1,6 @@
 const MovingObject = require("./moving_objects");
 const Bullet = require('./moving_bullets');
+const Images = require('./images');
 const Utils = require("./utils");
 
 
@@ -48,7 +49,7 @@ Ship.prototype.fire = function () {
   params.x_pos = this.x_pos;
   params.y_pos = this.y_pos;
   params.game = this.game;
-  params.image = Utils.shipBulletImage;
+  params.image = Images.ship_bullet;
   let bullet = new Bullet(params);
   this.game.shipBullets.push(bullet);
 
@@ -73,8 +74,5 @@ Ship.prototype.moveShip = function () {
     this.timeOut += 1;
   }
 };
-
-
-
 
 module.exports = Ship;

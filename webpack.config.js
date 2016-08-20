@@ -1,5 +1,5 @@
 module.exports = {
-  entry: "./entry.js",
+  entry: "./space_invaders_game/entry.js",
   output: {
   	filename: "./bundle.js"
   },

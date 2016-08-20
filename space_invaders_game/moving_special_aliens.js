@@ -1,10 +1,10 @@
 const Alien = require('./moving_aliens');
+const Images = require('./images');
 const Utils = require('./utils');
 
 function SpecialAlien(params){
   this.game = params.game;
-  this.image = new Image();
-  this.image.src = Utils.specialAlienImage;
+  this.image = Images.red_invader;
   this.radius = Utils.alienRadius;
   this.x_pos = params.x_pos;
   this.y_pos = params.y_pos;

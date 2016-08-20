@@ -1,8 +1,7 @@
 Utils = require('./utils');
 
 function MovingObject(params) {
-  this.image = new Image();
-  this.image.src = params.image;
+  this.image = params.image;
   this.x_pos = params.x_pos;
   this.y_pos = params.y_pos;
   this.game = params.game;

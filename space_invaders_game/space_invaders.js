@@ -5,6 +5,7 @@ const Bullet = require('./moving_bullets');
 const Utils = require('./utils');
 const MovingObject = require('./moving_objects');
 const Explosion = require('./explosion.js');
+const Images = require('./images');
 
 function Game(ctx){
   this.aliens = [];
@@ -21,14 +22,13 @@ function Game(ctx){
   this.score = 0;
   this.scoreArray = [];
   this.intervals = [];
-  this.backgroundImage = new Image();
-  this.backgroundImage.src = Utils.background;
+  this.backgroundImage = Images.background;
 }
 
 // draw methods
 
 Game.prototype.makeShip = function () {
-  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Utils.ship});
+  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Images.ship});
   this.ship.push(ship);
 };
 
@@ -40,7 +40,6 @@ Game.prototype.makeExplosion = function (pos) {
     frameX: 0,
     frameY: 0,
     game: this,
-    image_src: Utils.explosion
   });
   this.explosions.push(explode);
 };
@@ -51,7 +50,7 @@ Game.prototype.makeLives = function () {
       x_pos: this.ctx.canvas.width - i*50,
       y_pos: 40,
       radius: 2,
-      image: 'images/galaga.png',
+      image: Images.ship,
       game: this
     });
     this.shipLives.push(shipLife);
@@ -73,7 +72,7 @@ Game.prototype.makeAliens = function (){
         y_pos: j,
         radius: 20,
         game: this,
-        image: Utils.alien
+        image: Images.green_invader
       });
       this.aliens.push(alien);
     }
@@ -125,6 +124,7 @@ Game.prototype.drawAll = function (){
 };
 
 Game.prototype.drawBackground = function () {
+
   this.ctx.drawImage(this.backgroundImage, 0, 0);
 };
 
@@ -254,6 +254,12 @@ Game.prototype.play = function (){
   this.intervals.push(this.regularSpawn);
   this.intervals.push(this.specialSpawn);
   this.intervals.push(this.timer);
+};
+
+Game.prototype.start = function () {
+  if (Images.loaded) {
+    this.play();
+  }
 };
 
 module.exports = Game;

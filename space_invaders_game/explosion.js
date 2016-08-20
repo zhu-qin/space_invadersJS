@@ -1,3 +1,5 @@
+const Images = require('./images');
+
 function Explosion(params){
   this.pos = params.pos;
   this.frameWidth = params.frameWidth;
@@ -6,8 +8,7 @@ function Explosion(params){
   this.ctx = params.game.ctx;
   this.frameX = params.frameX;
   this.frameY = params.frameY;
-  this.image = new Image();
-  this.image.src = params.image_src;
+  this.image = Images.explosion;
 }
 
 
