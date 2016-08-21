@@ -9,6 +9,6 @@ ctx.strokeStyle = "transparent";
 setTimeout( function () {
   if (Images.loaded) {
     let game = new Game(ctx);
-    game.play();
+    game.showMenu();
   }
 }, 100);

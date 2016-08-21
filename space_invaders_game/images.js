@@ -17,7 +17,17 @@ function addImages(imagesArray){
     });
 }
 
-let imageFiles = ['background','explosion','ship', 'ship_bullet', 'intro', 'red_invader', 'alien_bullet', 'green_invader'];
+let imageFiles = [
+  'background',
+  'explosion',
+  'ship',
+  'ship_bullet',
+  'intro',
+  'red_invader',
+  'alien_bullet',
+  'green_invader',
+  'rocks'
+];
 
 addImages(imageFiles);
 

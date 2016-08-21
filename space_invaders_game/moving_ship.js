@@ -6,8 +6,11 @@ const Utils = require("./utils");
 
 function Ship(params){
   this.leftPressed = false;
-  this.rightPresed = false;
+  this.rightPressed = false;
+  this.upPressed = false;
+  this.downPressed = false;
   this.spacePressed = false;
+
   this.timeOut = 0;
   MovingObject.call(this, params);
   this.startShip();
@@ -24,11 +27,19 @@ Ship.prototype._handleKeyDown = function(e) {
   if (e.keyCode === 65) {
     this.leftPressed = true;
   } else if (e.keyCode === 68) {
-    this.rightPresed = true;
+    this.rightPressed = true;
   }
+
+  if (e.keyCode === 83) {
+    this.downPressed = true;
+  } else if (e.keyCode === 87) {
+    this.upPressed = true;
+  }
+
   if (e.keyCode === 32) {
     this.spacePressed = true;
   }
+
 };
 
 
@@ -36,8 +47,15 @@ Ship.prototype._handleKeyUp = function(e) {
   if (e.keyCode === 65) {
     this.leftPressed = false;
   } else if (e.keyCode === 68) {
-    this.rightPresed = false;
+    this.rightPressed = false;
   }
+
+  if (e.keyCode === 83) {
+    this.downPressed = false;
+  } else if (e.keyCode === 87) {
+    this.upPressed = false;
+  }
+
   if (e.keyCode === 32){
     this.timeOut = 0;
     this.spacePressed = false;
@@ -63,8 +81,14 @@ Ship.prototype.moveShip = function () {
   if (this.leftPressed === true && this.x_pos > this.radius) {
     this.moveObj(Utils.shipLeft);
   }
-  if (this.rightPresed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
+  if (this.rightPressed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
     this.moveObj(Utils.shipRight);
+  }
+  if (this.upPressed === true && this.y_pos > this.radius) {
+    this.moveObj(Utils.shipUp);
+  }
+  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.width - this.radius) {
+    this.moveObj(Utils.shipDown);
   }
   if (this.spacePressed === true) {
     this.timeOut = this.timeOut % 10;

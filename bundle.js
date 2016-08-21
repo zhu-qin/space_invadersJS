@@ -45,7 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const Game = __webpack_require__(1);
-	const Images = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
@@ -55,7 +55,7 @@
 	setTimeout( function () {
 	  if (Images.loaded) {
 	    let game = new Game(ctx);
-	    game.play();
+	    game.showMenu();
 	  }
 	}, 100);
 
@@ -65,17 +65,19 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const Alien = __webpack_require__(2);
-	const SpecialAlien = __webpack_require__(6);
-	const Ship = __webpack_require__(7);
+	const SpecialAlien = __webpack_require__(7);
+	const Ship = __webpack_require__(8);
 	const Bullet = __webpack_require__(5);
 	const Utils = __webpack_require__(4);
 	const MovingObject = __webpack_require__(3);
-	const Explosion = __webpack_require__(8);
-	const Images = __webpack_require__(9);
+	const SpaceRock = __webpack_require__(10);
+	const Explosion = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	
 	function Game(ctx){
+	  this.ctx = ctx;
 	  this.aliens = [];
-	  this.wall = [];
+	  this.rocks = [];
 	  this.shipBullets = [];
 	  this.alienBullets = [];
 	  this.ship = [];
@@ -83,7 +85,6 @@
 	  this.specialAliens = [];
 	  this.explosions = [];
 	  this.counter = 0;
-	  this.ctx = ctx;
 	  this.shipHealth = Utils.shipHealth;
 	  this.score = 0;
 	  this.scoreArray = [];
@@ -123,6 +124,16 @@
 	  }
 	};
 	
+	Game.prototype.makeRocks = function (){
+	  let rocks = new SpaceRock({
+	    pos: {x: 600, y: 600},
+	    radius: 5,
+	    game: this
+	  });
+	
+	  this.rocks.push(rocks);
+	};
+	
 	Game.prototype.drawScore = function (){
 	    this.ctx.font = "48px serif";
 	    this.ctx.fillStyle = "#fff";
@@ -131,7 +142,7 @@
 	};
 	
 	Game.prototype.makeAliens = function (){
-	  for (let i = 100; i <= 800 ;i += 120) {
+	  for (let i = 100; i <= 800 ;i += 150) {
 	    for (let j = 100; j <= 300; j += 50){
 	      let alien = new Alien({
 	        x_pos: i,
@@ -180,6 +191,7 @@
 	    this.shipBullets,
 	    this.alienBullets,
 	    this.explosions,
+	    // this.rocks,
 	    this.shipLives,
 	    this.scoreArray,
 	    this.specialAliens
@@ -190,7 +202,6 @@
 	};
 	
 	Game.prototype.drawBackground = function () {
-	
 	  this.ctx.drawImage(this.backgroundImage, 0, 0);
 	};
 	
@@ -233,6 +244,12 @@
 	  });
 	};
 	
+	Game.prototype.moveRocks = function () {
+	  this.rocks.forEach((rock) => {
+	    rock.moveObj();
+	  });
+	};
+	
 	Game.prototype.setAlienFire = function () {
 	  let alienFire = function () {
 	    let index = Math.floor(Math.random()*this.aliens.length);
@@ -244,7 +261,6 @@
 	      }
 	    });
 	  }.bind(this);
-	
 	  this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
 	  this.intervals.push(this.alienFire);
 	};
@@ -253,10 +269,8 @@
 	  this.alienBullets.forEach((bullet, alienIndex)=>{
 	    if (bullet.collideWith(this.ship[0])){
 	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
-	      this.ship.splice(0, 1);
 	      this.alienBullets.splice(alienIndex, 1);
 	      this.shipLives.pop();
-	      this.makeShip();
 	    }
 	  });
 	};
@@ -277,21 +291,43 @@
 	  });
 	};
 	
+	// Game.prototype.checkRockCollision = function (){
+	//   this.rocks.forEach((rock) => {
+	//     let allObjects = this.aliens.concat(
+	//       this.alienBullets,
+	//       this.shipBullets,
+	//       this.aliens,
+	//       this.ship
+	//     );
+	//     allObjects.forEach((obj, index) => {
+	//       if (rock.collideWith(obj)) {
+	//
+	//       }
+	//     });
+	//   });
+	// };
+	//
+	
+	
+	
+	
+	
 	Game.prototype.gameWon = function () {
 	  if (this.aliens.length === 0) {
-	    this.intervals.forEach((int) => {
+	    this.intervals.forEach((int)=> {
 	      clearInterval(int);
 	    });
-	    return true;
+	    this.showMenu();
 	  }
 	};
 	
 	Game.prototype.gameLost = function () {
 	  if (this.shipLives.length === 0) {
-	    this.intervals.forEach((int) => {
+	    this.intervals.forEach((int)=> {
 	      clearInterval(int);
 	    });
-	    return true;
+	    this.restart();
+	
 	  }
 	};
 	
@@ -301,31 +337,52 @@
 	  this.moveAlienBullets();
 	  this.moveShipBullets();
 	  this.wobbleAliens();
+	  this.moveRocks();
 	  this.checkShipCollision();
 	  this.checkAlienCollision();
+	  this.drawAll();
 	  this.gameWon();
 	  this.gameLost();
-	  this.drawAll();
 	};
 	
-	Game.prototype.play = function (){
+	Game.prototype.setup = function (){
 	  this.makeLives();
 	  this.makeAliens();
 	  this.makeSpecialAlien();
 	  this.makeShip();
+	  this.makeRocks();
 	  this.setAlienFire();
+	};
+	
+	Game.prototype.play = function (){
+	
 	  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
 	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
 	  this.timer = setInterval(this.moveAll.bind(this), 60);
+	
 	  this.intervals.push(this.regularSpawn);
 	  this.intervals.push(this.specialSpawn);
 	  this.intervals.push(this.timer);
 	};
 	
-	Game.prototype.start = function () {
-	  if (Images.loaded) {
-	    this.play();
-	  }
+	Game.prototype.restart = function(){
+	  let game = new Game(this.ctx);
+	  game.showMenu();
+	
+	};
+	
+	Game.prototype.showMenu = function (){
+	  this.clear();
+	  this.setup();
+	  this.drawAll();
+	  this.ctx.drawImage(Images.intro, 280, 300);
+	  let play = (e) => {
+	    if (e.keyCode === 13) {
+	            this.play();
+	            window.removeEventListener('keydown', play);
+	          }
+	        };
+	  window.addEventListener("keydown", play);
 	};
 	
 	module.exports = Game;
@@ -337,11 +394,20 @@
 
 	const MovingObject = __webpack_require__(3);
 	const Bullet = __webpack_require__(5);
-	const Images = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	const Utils = __webpack_require__(4);
 	
 	function Alien(params) {
 	  MovingObject.call(this, params);
+	  this.x_pos = params.x_pos;
+	  this.y_pos = params.y_pos;
+	  this.game = params.game;
+	  this.frameWidth = params.frameWidth;
+	  this.frameHeight = params.frameHeight;
+	  this.ctx = params.game.ctx;
+	  this.frameX = params.frameX;
+	  this.frameY = params.frameY;
+	  this.image = Images.green_invader;
 	}
 	
 	Utils.inherits(Alien, MovingObject);
@@ -357,6 +423,10 @@
 	  this.game.alienBullets.push(bullet);
 	
 	};
+	
+	// Alien.prototype.draw = function (){
+	//
+	// };
 	
 	
 	module.exports = Alien;
@@ -418,10 +488,8 @@
 	  },
 	
 	  // alien options
-	  alienRadius: 20,
+	  alienRadius: 25,
 	  specialAlienMove: 5,
-	
-	
 	
 	  alienRight: {x: 4, y: 0},
 	  alienLeft: {x: -4, y: 0},
@@ -429,19 +497,26 @@
 	
 	  alienBullet: {x: 0, y: 15},
 	  shipBullet: {x: 0, y: -25},
-	  shipRight: {x: 10, y: 0},
-	  shipLeft: {x: -10, y: 0},
+	
 	
 	  hoverGap: 40,
 	  bulletRadius: 3,
-	  bulletFrequency: 400,
+	  bulletFrequency: 600,
 	  offsetObject: 25,
 	  offsetExplosion: 50,
 	
 	  // ship options
-	  shipHealth: 5
+	  shipHealth: 5,
+	  shipRight: {x: 10, y: 0},
+	  shipLeft: {x: -10, y: 0},
+	  shipDown: {x: 0, y: 10},
+	  shipUp: {x: 0, y: -10},
 	
+	  // rock options
+	  rockRadius: 20,
 	
+	  canvasWidth: 800,
+	  canvasHeight: 800
 	
 	};
 
@@ -465,10 +540,50 @@
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	var images = {
+	  loading: 0,
+	  loaded: false
+	};
+	function addImages(imagesArray){
+	
+	    imagesArray.forEach((imageName)=>{
+	      let img = new Image();
+	      img.onload = function () {
+	        images[imageName] = img;
+	        images.loading += 1;
+	        if (images.loading === imagesArray.length) {
+	          images.loaded = true;
+	        }
+	      };
+	      img.src = `space_invaders_game/images/${imageName}.png`;
+	    });
+	}
+	
+	let imageFiles = [
+	  'background',
+	  'explosion',
+	  'ship',
+	  'ship_bullet',
+	  'intro',
+	  'red_invader',
+	  'alien_bullet',
+	  'green_invader',
+	  'rocks'
+	];
+	
+	addImages(imageFiles);
+	
+	module.exports = images;
+
+
+/***/ },
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const Alien = __webpack_require__(2);
-	const Images = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	const Utils = __webpack_require__(4);
 	
 	function SpecialAlien(params){
@@ -491,19 +606,22 @@
 
 
 /***/ },
-/* 7 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const MovingObject = __webpack_require__(3);
 	const Bullet = __webpack_require__(5);
-	const Images = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	const Utils = __webpack_require__(4);
 	
 	
 	function Ship(params){
 	  this.leftPressed = false;
-	  this.rightPresed = false;
+	  this.rightPressed = false;
+	  this.upPressed = false;
+	  this.downPressed = false;
 	  this.spacePressed = false;
+	
 	  this.timeOut = 0;
 	  MovingObject.call(this, params);
 	  this.startShip();
@@ -520,11 +638,19 @@
 	  if (e.keyCode === 65) {
 	    this.leftPressed = true;
 	  } else if (e.keyCode === 68) {
-	    this.rightPresed = true;
+	    this.rightPressed = true;
 	  }
+	
+	  if (e.keyCode === 83) {
+	    this.downPressed = true;
+	  } else if (e.keyCode === 87) {
+	    this.upPressed = true;
+	  }
+	
 	  if (e.keyCode === 32) {
 	    this.spacePressed = true;
 	  }
+	
 	};
 	
 	
@@ -532,8 +658,15 @@
 	  if (e.keyCode === 65) {
 	    this.leftPressed = false;
 	  } else if (e.keyCode === 68) {
-	    this.rightPresed = false;
+	    this.rightPressed = false;
 	  }
+	
+	  if (e.keyCode === 83) {
+	    this.downPressed = false;
+	  } else if (e.keyCode === 87) {
+	    this.upPressed = false;
+	  }
+	
 	  if (e.keyCode === 32){
 	    this.timeOut = 0;
 	    this.spacePressed = false;
@@ -559,8 +692,14 @@
 	  if (this.leftPressed === true && this.x_pos > this.radius) {
 	    this.moveObj(Utils.shipLeft);
 	  }
-	  if (this.rightPresed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
+	  if (this.rightPressed === true && this.x_pos < this.game.ctx.canvas.width - this.radius) {
 	    this.moveObj(Utils.shipRight);
+	  }
+	  if (this.upPressed === true && this.y_pos > this.radius) {
+	    this.moveObj(Utils.shipUp);
+	  }
+	  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.width - this.radius) {
+	    this.moveObj(Utils.shipDown);
 	  }
 	  if (this.spacePressed === true) {
 	    this.timeOut = this.timeOut % 10;
@@ -575,10 +714,10 @@
 
 
 /***/ },
-/* 8 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Images = __webpack_require__(9);
+	const Images = __webpack_require__(6);
 	
 	function Explosion(params){
 	  this.pos = params.pos;
@@ -613,46 +752,80 @@
 	  }
 	  // do this later
 	  if (this.frameY > 1152) {
-	    this.game.explosions.forEach((explode,index) => {
-	      if (explode.pos.x === this.pos.x && explode.pos.y === this.pos.y) {
-	        this.game.explosions.splice(index, 1);
+	    this.game.explosions.shift();
 	      }
-	    });
-	  }
-	
 	};
+	
+	
 	
 	module.exports = Explosion;
 
 
 /***/ },
-/* 9 */
-/***/ function(module, exports) {
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
 
-	var images = {
-	  loading: 0,
-	  loaded: false
-	};
-	function addImages(imagesArray){
+	const Images = __webpack_require__(6);
+	const MovingObject = __webpack_require__(3);
+	const Utils = __webpack_require__(4);
 	
-	    imagesArray.forEach((imageName)=>{
-	      let img = new Image();
-	      img.onload = function () {
-	        images[imageName] = img;
-	        images.loading += 1;
-	        if (images.loading === imagesArray.length) {
-	          images.loaded = true;
-	        }
-	      };
-	      img.src = `space_invaders_game/images/${imageName}.png`;
-	    });
+	function SpaceRock(params){
+	  this.velocity = {x:4, y: -1};
+	  this.pos = params.pos;
+	  this.frameWidth = 256;
+	  this.frameHeight = 256;
+	  this.game = params.game;
+	  this.ctx = params.game.ctx;
+	  this.frameX = 0;
+	  this.frameY = 0;
+	  this.radius = Utils.rockRadius;
+	  this.image = Images.rocks;
 	}
 	
-	let imageFiles = ['background','explosion','ship', 'ship_bullet', 'intro', 'red_invader', 'alien_bullet', 'green_invader'];
+	Utils.inherits(SpaceRock, MovingObject);
 	
-	addImages(imageFiles);
 	
-	module.exports = images;
+	SpaceRock.prototype.draw = function (){
+	  this.ctx.drawImage(
+	    this.image,
+	    this.frameX,
+	    this.frameY,
+	    this.frameWidth,
+	    this.frameHeight,
+	    this.pos.x,
+	    this.pos.y,
+	    this.frameWidth/2,
+	    this.frameHeight/2
+	  );
+	
+	  this.frameX += this.frameWidth;
+	
+	  if (this.frameX >= 2048) {
+	    this.frameX = 0;
+	    this.frameY += this.frameHeight;
+	  }
+	  // do this later
+	  if (this.frameY >= 2048/2) {
+	    this.frameY = 0;
+	      }
+	};
+	
+	SpaceRock.prototype.moveObj = function (){
+	console.log(this.radius);
+	  if (this.pos.x >= (Utils.canvasWidth - this.radius) || this.pos.x <= (0 + this.radius)) {
+	
+	    let newVel = -this.velocity.x;
+	    this.velocity.x = newVel;
+	  }
+	  this.pos.x += this.velocity.x;
+	  if (this.pos.y >= (Utils.canvasHeight + this.radius) || this.pos.y <= (0 + this.radius )) {
+	    let newVel = -this.velocity.y;
+	    this.velocity.y = newVel;
+	  }
+	  this.pos.y += this.velocity.y;
+	};
+	
+	module.exports = SpaceRock;
 
 
 /***/ }

@@ -33,13 +33,10 @@ Explosion.prototype.draw = function (){
   }
   // do this later
   if (this.frameY > 1152) {
-    this.game.explosions.forEach((explode,index) => {
-      if (explode.pos.x === this.pos.x && explode.pos.y === this.pos.y) {
-        this.game.explosions.splice(index, 1);
+    this.game.explosions.shift();
       }
-    });
-  }
-
 };
+
+
 
 module.exports = Explosion;

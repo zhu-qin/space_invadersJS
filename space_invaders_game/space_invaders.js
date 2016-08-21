@@ -4,12 +4,14 @@ const Ship = require('./moving_ship');
 const Bullet = require('./moving_bullets');
 const Utils = require('./utils');
 const MovingObject = require('./moving_objects');
+const SpaceRock = require('./space_rock');
 const Explosion = require('./explosion.js');
 const Images = require('./images');
 
 function Game(ctx){
+  this.ctx = ctx;
   this.aliens = [];
-  this.wall = [];
+  this.rocks = [];
   this.shipBullets = [];
   this.alienBullets = [];
   this.ship = [];
@@ -17,7 +19,6 @@ function Game(ctx){
   this.specialAliens = [];
   this.explosions = [];
   this.counter = 0;
-  this.ctx = ctx;
   this.shipHealth = Utils.shipHealth;
   this.score = 0;
   this.scoreArray = [];
@@ -57,6 +58,16 @@ Game.prototype.makeLives = function () {
   }
 };
 
+Game.prototype.makeRocks = function (){
+  let rocks = new SpaceRock({
+    pos: {x: 600, y: 600},
+    radius: 5,
+    game: this
+  });
+
+  this.rocks.push(rocks);
+};
+
 Game.prototype.drawScore = function (){
     this.ctx.font = "48px serif";
     this.ctx.fillStyle = "#fff";
@@ -65,7 +76,7 @@ Game.prototype.drawScore = function (){
 };
 
 Game.prototype.makeAliens = function (){
-  for (let i = 100; i <= 800 ;i += 120) {
+  for (let i = 100; i <= 800 ;i += 150) {
     for (let j = 100; j <= 300; j += 50){
       let alien = new Alien({
         x_pos: i,
@@ -114,6 +125,7 @@ Game.prototype.drawAll = function (){
     this.shipBullets,
     this.alienBullets,
     this.explosions,
+    // this.rocks,
     this.shipLives,
     this.scoreArray,
     this.specialAliens
@@ -124,7 +136,6 @@ Game.prototype.drawAll = function (){
 };
 
 Game.prototype.drawBackground = function () {
-
   this.ctx.drawImage(this.backgroundImage, 0, 0);
 };
 
@@ -167,6 +178,12 @@ Game.prototype.moveAlienBullets = function (){
   });
 };
 
+Game.prototype.moveRocks = function () {
+  this.rocks.forEach((rock) => {
+    rock.moveObj();
+  });
+};
+
 Game.prototype.setAlienFire = function () {
   let alienFire = function () {
     let index = Math.floor(Math.random()*this.aliens.length);
@@ -178,7 +195,6 @@ Game.prototype.setAlienFire = function () {
       }
     });
   }.bind(this);
-
   this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
   this.intervals.push(this.alienFire);
 };
@@ -187,10 +203,8 @@ Game.prototype.checkShipCollision = function (){
   this.alienBullets.forEach((bullet, alienIndex)=>{
     if (bullet.collideWith(this.ship[0])){
       this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
-      this.ship.splice(0, 1);
       this.alienBullets.splice(alienIndex, 1);
       this.shipLives.pop();
-      this.makeShip();
     }
   });
 };
@@ -211,21 +225,43 @@ Game.prototype.checkAlienCollision = function (){
   });
 };
 
+// Game.prototype.checkRockCollision = function (){
+//   this.rocks.forEach((rock) => {
+//     let allObjects = this.aliens.concat(
+//       this.alienBullets,
+//       this.shipBullets,
+//       this.aliens,
+//       this.ship
+//     );
+//     allObjects.forEach((obj, index) => {
+//       if (rock.collideWith(obj)) {
+//
+//       }
+//     });
+//   });
+// };
+//
+
+
+
+
+
 Game.prototype.gameWon = function () {
   if (this.aliens.length === 0) {
-    this.intervals.forEach((int) => {
+    this.intervals.forEach((int)=> {
       clearInterval(int);
     });
-    return true;
+    this.showMenu();
   }
 };
 
 Game.prototype.gameLost = function () {
   if (this.shipLives.length === 0) {
-    this.intervals.forEach((int) => {
+    this.intervals.forEach((int)=> {
       clearInterval(int);
     });
-    return true;
+    this.restart();
+
   }
 };
 
@@ -235,31 +271,52 @@ Game.prototype.moveAll = function () {
   this.moveAlienBullets();
   this.moveShipBullets();
   this.wobbleAliens();
+  this.moveRocks();
   this.checkShipCollision();
   this.checkAlienCollision();
+  this.drawAll();
   this.gameWon();
   this.gameLost();
-  this.drawAll();
 };
 
-Game.prototype.play = function (){
+Game.prototype.setup = function (){
   this.makeLives();
   this.makeAliens();
   this.makeSpecialAlien();
   this.makeShip();
+  this.makeRocks();
   this.setAlienFire();
+};
+
+Game.prototype.play = function (){
+
   this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
   this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
   this.timer = setInterval(this.moveAll.bind(this), 60);
+
   this.intervals.push(this.regularSpawn);
   this.intervals.push(this.specialSpawn);
   this.intervals.push(this.timer);
 };
 
-Game.prototype.start = function () {
-  if (Images.loaded) {
-    this.play();
-  }
+Game.prototype.restart = function(){
+  let game = new Game(this.ctx);
+  game.showMenu();
+
+};
+
+Game.prototype.showMenu = function (){
+  this.clear();
+  this.setup();
+  this.drawAll();
+  this.ctx.drawImage(Images.intro, 280, 300);
+  let play = (e) => {
+    if (e.keyCode === 13) {
+            this.play();
+            window.removeEventListener('keydown', play);
+          }
+        };
+  window.addEventListener("keydown", play);
 };
 
 module.exports = Game;
