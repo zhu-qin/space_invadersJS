@@ -60,7 +60,8 @@ Game.prototype.makeLives = function () {
 
 Game.prototype.makeRocks = function (){
   let rocks = new SpaceRock({
-    pos: {x: 600, y: 600},
+    x_pos: 600,
+    y_pos: 600,
     radius: 5,
     game: this
   });
@@ -117,23 +118,7 @@ Game.prototype.clear = function () {
   this.ctx.clearRect(0,0, canvas.width, canvas.height);
 };
 
-Game.prototype.drawAll = function (){
-  this.drawBackground();
-  this.drawScore();
-  let allObjects = this.aliens.concat(
-    this.ship,
-    this.shipBullets,
-    this.alienBullets,
-    this.explosions,
-    // this.rocks,
-    this.shipLives,
-    this.scoreArray,
-    this.specialAliens
-  );
-  allObjects.forEach((obj) => {
-    obj.draw();
-  });
-};
+
 
 Game.prototype.drawBackground = function () {
   this.ctx.drawImage(this.backgroundImage, 0, 0);
@@ -166,21 +151,76 @@ Game.prototype.wobbleAliens = function (){
   }
 };
 
+// move bullets and check collisions
 Game.prototype.moveShipBullets = function (){
-  this.shipBullets.forEach((bullet) => {
+  this.shipBullets.forEach((bullet, bulletIndex) => {
     bullet.moveObj(Utils.shipBullet);
+    if (bullet.y_pos <= 0 - Utils.canvasHeight*(0.2)) {
+      this.shipBullets.shift();
+    }
+    this.aliens.forEach((alien, alienIndex) => {
+      if(bullet.collideWith(alien)){
+        this.aliens.splice(alienIndex, 1);
+        if (alien instanceof SpecialAlien) {
+          this.score += 50;
+        }
+        this.shipBullets.splice(bulletIndex, 1);
+        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
+        this.score += 10;
+      }
+
+    });
+
+    this.rocks.forEach((rock) => {
+      if (bullet.collideWith(rock)){
+        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+        rock.velocity.y -= 3;
+        this.shipBullets.splice(bulletIndex, 1);
+      }
+    });
+
   });
 };
 
 Game.prototype.moveAlienBullets = function (){
-  this.alienBullets.forEach((bullet) => {
+  this.alienBullets.forEach((bullet, bulletIndex) => {
     bullet.moveObj(Utils.alienBullet);
+    if (bullet.y_pos >= Utils.canvasHeight*1.2) {
+      this.alienBullets.shift();
+    }
+
+    if (bullet.collideWith(this.ship[0])){
+      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
+      this.alienBullets.splice(bulletIndex, 1);
+      this.shipLives.pop();
+    }
+
+    this.rocks.forEach((rock) => {
+      if (bullet.collideWith(rock)){
+        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+        rock.velocity.y += 1;
+        this.alienBullets.splice(bulletIndex, 1);
+      }
+    });
+
+
   });
 };
 
 Game.prototype.moveRocks = function () {
   this.rocks.forEach((rock) => {
     rock.moveObj();
+    this.aliens.forEach((alien, alienIndex) => {
+      if (rock.collideWith(alien)) {
+        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+        this.aliens.splice(alienIndex, 1);
+        if (alien instanceof SpecialAlien) {
+          this.score += 50;
+        }
+          this.score += 10;
+      }
+    });
+
   });
 };
 
@@ -198,52 +238,6 @@ Game.prototype.setAlienFire = function () {
   this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
   this.intervals.push(this.alienFire);
 };
-
-Game.prototype.checkShipCollision = function (){
-  this.alienBullets.forEach((bullet, alienIndex)=>{
-    if (bullet.collideWith(this.ship[0])){
-      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
-      this.alienBullets.splice(alienIndex, 1);
-      this.shipLives.pop();
-    }
-  });
-};
-
-Game.prototype.checkAlienCollision = function (){
-  this.shipBullets.forEach((bullet, bulletIndex)=>{
-    this.aliens.forEach((alien, alienIndex) => {
-      if(bullet.collideWith(alien)){
-        this.aliens.splice(alienIndex, 1);
-        if (alien instanceof SpecialAlien) {
-          this.score += 50;
-        }
-        this.shipBullets.splice(bulletIndex, 1);
-        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
-        this.score += 10;
-      }
-    });
-  });
-};
-
-// Game.prototype.checkRockCollision = function (){
-//   this.rocks.forEach((rock) => {
-//     let allObjects = this.aliens.concat(
-//       this.alienBullets,
-//       this.shipBullets,
-//       this.aliens,
-//       this.ship
-//     );
-//     allObjects.forEach((obj, index) => {
-//       if (rock.collideWith(obj)) {
-//
-//       }
-//     });
-//   });
-// };
-//
-
-
-
 
 
 Game.prototype.gameWon = function () {
@@ -264,6 +258,23 @@ Game.prototype.gameLost = function () {
 
   }
 };
+Game.prototype.drawAll = function (){
+  this.drawBackground();
+  this.drawScore();
+  let allObjects = this.aliens.concat(
+    this.ship,
+    this.shipBullets,
+    this.alienBullets,
+    this.explosions,
+    this.rocks,
+    this.shipLives,
+    this.scoreArray,
+    this.specialAliens
+  );
+  allObjects.forEach((obj) => {
+    obj.draw();
+  });
+};
 
 Game.prototype.moveAll = function () {
   this.clear();
@@ -272,8 +283,6 @@ Game.prototype.moveAll = function () {
   this.moveShipBullets();
   this.wobbleAliens();
   this.moveRocks();
-  this.checkShipCollision();
-  this.checkAlienCollision();
   this.drawAll();
   this.gameWon();
   this.gameLost();

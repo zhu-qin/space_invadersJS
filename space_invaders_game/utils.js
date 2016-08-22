@@ -32,7 +32,8 @@ module.exports = {
   shipUp: {x: 0, y: -10},
 
   // rock options
-  rockRadius: 20,
+  rockRadius: 35,
+  offsetRock: 60,
 
   canvasWidth: 800,
   canvasHeight: 800

@@ -70,8 +70,8 @@
 	const Bullet = __webpack_require__(5);
 	const Utils = __webpack_require__(4);
 	const MovingObject = __webpack_require__(3);
-	const SpaceRock = __webpack_require__(10);
-	const Explosion = __webpack_require__(9);
+	const SpaceRock = __webpack_require__(9);
+	const Explosion = __webpack_require__(10);
 	const Images = __webpack_require__(6);
 	
 	function Game(ctx){
@@ -126,7 +126,8 @@
 	
 	Game.prototype.makeRocks = function (){
 	  let rocks = new SpaceRock({
-	    pos: {x: 600, y: 600},
+	    x_pos: 600,
+	    y_pos: 600,
 	    radius: 5,
 	    game: this
 	  });
@@ -183,23 +184,7 @@
 	  this.ctx.clearRect(0,0, canvas.width, canvas.height);
 	};
 	
-	Game.prototype.drawAll = function (){
-	  this.drawBackground();
-	  this.drawScore();
-	  let allObjects = this.aliens.concat(
-	    this.ship,
-	    this.shipBullets,
-	    this.alienBullets,
-	    this.explosions,
-	    // this.rocks,
-	    this.shipLives,
-	    this.scoreArray,
-	    this.specialAliens
-	  );
-	  allObjects.forEach((obj) => {
-	    obj.draw();
-	  });
-	};
+	
 	
 	Game.prototype.drawBackground = function () {
 	  this.ctx.drawImage(this.backgroundImage, 0, 0);
@@ -232,21 +217,76 @@
 	  }
 	};
 	
+	// move bullets and check collisions
 	Game.prototype.moveShipBullets = function (){
-	  this.shipBullets.forEach((bullet) => {
+	  this.shipBullets.forEach((bullet, bulletIndex) => {
 	    bullet.moveObj(Utils.shipBullet);
+	    if (bullet.y_pos <= 0 - Utils.canvasHeight*(0.2)) {
+	      this.shipBullets.shift();
+	    }
+	    this.aliens.forEach((alien, alienIndex) => {
+	      if(bullet.collideWith(alien)){
+	        this.aliens.splice(alienIndex, 1);
+	        if (alien instanceof SpecialAlien) {
+	          this.score += 50;
+	        }
+	        this.shipBullets.splice(bulletIndex, 1);
+	        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
+	        this.score += 10;
+	      }
+	
+	    });
+	
+	    this.rocks.forEach((rock) => {
+	      if (bullet.collideWith(rock)){
+	        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+	        rock.velocity.y -= 3;
+	        this.shipBullets.splice(bulletIndex, 1);
+	      }
+	    });
+	
 	  });
 	};
 	
 	Game.prototype.moveAlienBullets = function (){
-	  this.alienBullets.forEach((bullet) => {
+	  this.alienBullets.forEach((bullet, bulletIndex) => {
 	    bullet.moveObj(Utils.alienBullet);
+	    if (bullet.y_pos >= Utils.canvasHeight*1.2) {
+	      this.alienBullets.shift();
+	    }
+	
+	    if (bullet.collideWith(this.ship[0])){
+	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
+	      this.alienBullets.splice(bulletIndex, 1);
+	      this.shipLives.pop();
+	    }
+	
+	    this.rocks.forEach((rock) => {
+	      if (bullet.collideWith(rock)){
+	        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+	        rock.velocity.y += 1;
+	        this.alienBullets.splice(bulletIndex, 1);
+	      }
+	    });
+	
+	
 	  });
 	};
 	
 	Game.prototype.moveRocks = function () {
 	  this.rocks.forEach((rock) => {
 	    rock.moveObj();
+	    this.aliens.forEach((alien, alienIndex) => {
+	      if (rock.collideWith(alien)) {
+	        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
+	        this.aliens.splice(alienIndex, 1);
+	        if (alien instanceof SpecialAlien) {
+	          this.score += 50;
+	        }
+	          this.score += 10;
+	      }
+	    });
+	
 	  });
 	};
 	
@@ -264,52 +304,6 @@
 	  this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
 	  this.intervals.push(this.alienFire);
 	};
-	
-	Game.prototype.checkShipCollision = function (){
-	  this.alienBullets.forEach((bullet, alienIndex)=>{
-	    if (bullet.collideWith(this.ship[0])){
-	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
-	      this.alienBullets.splice(alienIndex, 1);
-	      this.shipLives.pop();
-	    }
-	  });
-	};
-	
-	Game.prototype.checkAlienCollision = function (){
-	  this.shipBullets.forEach((bullet, bulletIndex)=>{
-	    this.aliens.forEach((alien, alienIndex) => {
-	      if(bullet.collideWith(alien)){
-	        this.aliens.splice(alienIndex, 1);
-	        if (alien instanceof SpecialAlien) {
-	          this.score += 50;
-	        }
-	        this.shipBullets.splice(bulletIndex, 1);
-	        this.makeExplosion({x: alien.x_pos - Utils.offsetExplosion, y: alien.y_pos - Utils.offsetExplosion});
-	        this.score += 10;
-	      }
-	    });
-	  });
-	};
-	
-	// Game.prototype.checkRockCollision = function (){
-	//   this.rocks.forEach((rock) => {
-	//     let allObjects = this.aliens.concat(
-	//       this.alienBullets,
-	//       this.shipBullets,
-	//       this.aliens,
-	//       this.ship
-	//     );
-	//     allObjects.forEach((obj, index) => {
-	//       if (rock.collideWith(obj)) {
-	//
-	//       }
-	//     });
-	//   });
-	// };
-	//
-	
-	
-	
 	
 	
 	Game.prototype.gameWon = function () {
@@ -330,6 +324,23 @@
 	
 	  }
 	};
+	Game.prototype.drawAll = function (){
+	  this.drawBackground();
+	  this.drawScore();
+	  let allObjects = this.aliens.concat(
+	    this.ship,
+	    this.shipBullets,
+	    this.alienBullets,
+	    this.explosions,
+	    this.rocks,
+	    this.shipLives,
+	    this.scoreArray,
+	    this.specialAliens
+	  );
+	  allObjects.forEach((obj) => {
+	    obj.draw();
+	  });
+	};
 	
 	Game.prototype.moveAll = function () {
 	  this.clear();
@@ -338,8 +349,6 @@
 	  this.moveShipBullets();
 	  this.wobbleAliens();
 	  this.moveRocks();
-	  this.checkShipCollision();
-	  this.checkAlienCollision();
 	  this.drawAll();
 	  this.gameWon();
 	  this.gameLost();
@@ -469,6 +478,7 @@
 	  if (distance < this.radius + otherObj.radius) {
 	    return true;
 	  }
+	  return false;
 	};
 	
 	
@@ -513,7 +523,8 @@
 	  shipUp: {x: 0, y: -10},
 	
 	  // rock options
-	  rockRadius: 20,
+	  rockRadius: 35,
+	  offsetRock: 60,
 	
 	  canvasWidth: 800,
 	  canvasHeight: 800
@@ -718,6 +729,76 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	const Images = __webpack_require__(6);
+	const MovingObject = __webpack_require__(3);
+	const Utils = __webpack_require__(4);
+	
+	function SpaceRock(params){
+	  this.velocity = {x:4, y: -1};
+	  this.x_pos = params.x_pos;
+	  this.y_pos = params.y_pos;
+	  this.frameWidth = 256;
+	  this.frameHeight = 256;
+	  this.game = params.game;
+	  this.ctx = params.game.ctx;
+	  this.frameX = 0;
+	  this.frameY = 0;
+	  this.radius = Utils.rockRadius;
+	  this.image = Images.rocks;
+	}
+	
+	Utils.inherits(SpaceRock, MovingObject);
+	
+	
+	SpaceRock.prototype.draw = function (){
+	  this.game.ctx.beginPath();
+	  this.game.ctx.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI*2, true);
+	  this.game.ctx.stroke();
+	
+	  this.ctx.drawImage(
+	    this.image,
+	    this.frameX,
+	    this.frameY,
+	    this.frameWidth,
+	    this.frameHeight,
+	    this.x_pos - Utils.offsetRock,
+	    this.y_pos - Utils.offsetRock,
+	    this.frameWidth/2,
+	    this.frameHeight/2
+	  );
+	
+	  this.frameX += this.frameWidth;
+	
+	  if (this.frameX >= 2048) {
+	    this.frameX = 0;
+	    this.frameY += this.frameHeight;
+	  }
+	  // do this later
+	  if (this.frameY >= 2048/2) {
+	    this.frameY = 0;
+	      }
+	};
+	
+	SpaceRock.prototype.moveObj = function (){
+	  if (this.x_pos >= (Utils.canvasWidth - this.radius) || this.x_pos <= (0 + this.radius)) {
+	    let newVel = -this.velocity.x;
+	    this.velocity.x = newVel;
+	  }
+	  this.x_pos += this.velocity.x;
+	  if (this.y_pos >= (Utils.canvasHeight - this.radius) || this.y_pos <= (0 + this.radius )) {
+	    let newVel = -this.velocity.y;
+	    this.velocity.y = newVel;
+	  }
+	  this.y_pos += this.velocity.y;
+	};
+	
+	module.exports = SpaceRock;
+
+
+/***/ },
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Images = __webpack_require__(6);
 	
 	function Explosion(params){
 	  this.pos = params.pos;
@@ -759,73 +840,6 @@
 	
 	
 	module.exports = Explosion;
-
-
-/***/ },
-/* 10 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Images = __webpack_require__(6);
-	const MovingObject = __webpack_require__(3);
-	const Utils = __webpack_require__(4);
-	
-	function SpaceRock(params){
-	  this.velocity = {x:4, y: -1};
-	  this.pos = params.pos;
-	  this.frameWidth = 256;
-	  this.frameHeight = 256;
-	  this.game = params.game;
-	  this.ctx = params.game.ctx;
-	  this.frameX = 0;
-	  this.frameY = 0;
-	  this.radius = Utils.rockRadius;
-	  this.image = Images.rocks;
-	}
-	
-	Utils.inherits(SpaceRock, MovingObject);
-	
-	
-	SpaceRock.prototype.draw = function (){
-	  this.ctx.drawImage(
-	    this.image,
-	    this.frameX,
-	    this.frameY,
-	    this.frameWidth,
-	    this.frameHeight,
-	    this.pos.x,
-	    this.pos.y,
-	    this.frameWidth/2,
-	    this.frameHeight/2
-	  );
-	
-	  this.frameX += this.frameWidth;
-	
-	  if (this.frameX >= 2048) {
-	    this.frameX = 0;
-	    this.frameY += this.frameHeight;
-	  }
-	  // do this later
-	  if (this.frameY >= 2048/2) {
-	    this.frameY = 0;
-	      }
-	};
-	
-	SpaceRock.prototype.moveObj = function (){
-	console.log(this.radius);
-	  if (this.pos.x >= (Utils.canvasWidth - this.radius) || this.pos.x <= (0 + this.radius)) {
-	
-	    let newVel = -this.velocity.x;
-	    this.velocity.x = newVel;
-	  }
-	  this.pos.x += this.velocity.x;
-	  if (this.pos.y >= (Utils.canvasHeight + this.radius) || this.pos.y <= (0 + this.radius )) {
-	    let newVel = -this.velocity.y;
-	    this.velocity.y = newVel;
-	  }
-	  this.pos.y += this.velocity.y;
-	};
-	
-	module.exports = SpaceRock;
 
 
 /***/ }

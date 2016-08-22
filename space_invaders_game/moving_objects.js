@@ -31,6 +31,7 @@ MovingObject.prototype.collideWith = function (otherObj) {
   if (distance < this.radius + otherObj.radius) {
     return true;
   }
+  return false;
 };
 
 
