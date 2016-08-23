@@ -311,7 +311,6 @@ Game.prototype.play = function (){
 Game.prototype.restart = function(){
   let game = new Game(this.ctx);
   game.showMenu();
-
 };
 
 Game.prototype.showMenu = function (){

@@ -57,7 +57,7 @@
 	    let game = new Game(ctx);
 	    game.showMenu();
 	  }
-	}, 100);
+	}, 200);
 
 
 /***/ },
@@ -377,7 +377,6 @@
 	Game.prototype.restart = function(){
 	  let game = new Game(this.ctx);
 	  game.showMenu();
-	
 	};
 	
 	Game.prototype.showMenu = function (){
@@ -455,12 +454,14 @@
 	  this.radius = params.radius;
 	}
 	
+	
+	// draw circles to see collisions and test
 	MovingObject.prototype.draw = function (){
 	  let x = this.x_pos;
 	  let y = this.y_pos;
-	  this.game.ctx.beginPath();
-	  this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
-	  this.game.ctx.stroke();
+	  // this.game.ctx.beginPath();
+	  // this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
+	  // this.game.ctx.stroke();
 	  this.showImage();
 	};
 	

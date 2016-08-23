@@ -11,4 +11,4 @@ setTimeout( function () {
     let game = new Game(ctx);
     game.showMenu();
   }
-}, 100);
+}, 200);
