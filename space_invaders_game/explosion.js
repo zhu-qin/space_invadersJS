@@ -31,7 +31,7 @@ Explosion.prototype.draw = function (){
     this.frameX = 0;
     this.frameY += this.frameHeight;
   }
-  // do this later
+
   if (this.frameY > 1152) {
     this.game.explosions.shift();
       }

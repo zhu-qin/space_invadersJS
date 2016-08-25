@@ -19,8 +19,8 @@ function Ship(params){
 Utils.inherits(Ship, MovingObject);
 
 Ship.prototype.addListeners = function (){
-  document.addEventListener("keydown",this._handleKeyDown.bind(this));
-  document.addEventListener("keyup",this._handleKeyUp.bind(this));
+  document.addEventListener("keydown", this._handleKeyDown.bind(this));
+  document.addEventListener("keyup", this._handleKeyUp.bind(this));
 };
 
 Ship.prototype._handleKeyDown = function(e) {
@@ -87,7 +87,7 @@ Ship.prototype.moveShip = function () {
   if (this.upPressed === true && this.y_pos > this.radius) {
     this.moveObj(Utils.shipUp);
   }
-  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.width - this.radius) {
+  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.height - this.radius) {
     this.moveObj(Utils.shipDown);
   }
   if (this.spacePressed === true) {

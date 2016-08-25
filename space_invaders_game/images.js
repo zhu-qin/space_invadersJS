@@ -5,6 +5,7 @@ var images = {
 function addImages(imagesArray){
 
     imagesArray.forEach((imageName)=>{
+      
       let img = new Image();
       img.onload = function () {
         images[imageName] = img;

@@ -57,7 +57,7 @@
 	    let game = new Game(ctx);
 	    game.showMenu();
 	  }
-	}, 200);
+	}, 500);
 
 
 /***/ },
@@ -95,7 +95,7 @@
 	// draw methods
 	
 	Game.prototype.makeShip = function () {
-	  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Images.ship});
+	  let ship = new Ship({x_pos: 400, y_pos: 520, radius: 25, game: this, image: Images.ship});
 	  this.ship.push(ship);
 	};
 	
@@ -126,9 +126,8 @@
 	
 	Game.prototype.makeRocks = function (){
 	  let rocks = new SpaceRock({
-	    x_pos: 600,
-	    y_pos: 600,
-	    radius: 5,
+	    x_pos: 400,
+	    y_pos: 400,
 	    game: this
 	  });
 	
@@ -144,7 +143,7 @@
 	
 	Game.prototype.makeAliens = function (){
 	  for (let i = 100; i <= 800 ;i += 150) {
-	    for (let j = 100; j <= 300; j += 50){
+	    for (let j = 100; j <= 200; j += 50){
 	      let alien = new Alien({
 	        x_pos: i,
 	        y_pos: j,
@@ -164,14 +163,14 @@
 	
 	  let alienLeft = new SpecialAlien({
 	    x_pos: 0 - Utils.alienRadius,
-	    y_pos: Math.random()*200 + 300,
+	    y_pos: Math.random()*100 + 300,
 	    move_x: Utils.specialAlienMove,
 	    game: this
 	  });
 	
 	  let alienRight = new SpecialAlien({
 	    x_pos: this.ctx.canvas.width + Utils.alienRadius,
-	    y_pos: Math.random()*200 + 300,
+	    y_pos: Math.random()*100 + 300,
 	    move_x: -Utils.specialAlienMove,
 	    game: this
 	  });
@@ -365,9 +364,9 @@
 	
 	Game.prototype.play = function (){
 	
-	  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
-	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
-	  this.timer = setInterval(this.moveAll.bind(this), 60);
+	  this.regularSpawn = setInterval(this.makeAliens.bind(this), Utils.alienSpawnRate);
+	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), Utils.specialAlienSpawnRate);
+	  this.timer = setInterval(this.moveAll.bind(this), 30);
 	
 	  this.intervals.push(this.regularSpawn);
 	  this.intervals.push(this.specialSpawn);
@@ -504,31 +503,33 @@
 	
 	  alienRight: {x: 4, y: 0},
 	  alienLeft: {x: -4, y: 0},
-	  alienDown: {x: 0, y: 16},
+	  alienDown: {x: 0, y: 10},
+	  alienSpawnRate: 15000,
+	  specialAlienSpawnRate: 4000,
 	
-	  alienBullet: {x: 0, y: 15},
-	  shipBullet: {x: 0, y: -25},
+	  alienBullet: {x: 0, y: 12},
+	  shipBullet: {x: 0, y: -20},
 	
 	
 	  hoverGap: 40,
 	  bulletRadius: 3,
-	  bulletFrequency: 600,
+	  bulletFrequency: 500,
 	  offsetObject: 25,
 	  offsetExplosion: 50,
 	
 	  // ship options
 	  shipHealth: 5,
-	  shipRight: {x: 10, y: 0},
-	  shipLeft: {x: -10, y: 0},
-	  shipDown: {x: 0, y: 10},
-	  shipUp: {x: 0, y: -10},
+	  shipRight: {x: 6, y: 0},
+	  shipLeft: {x: -6, y: 0},
+	  shipDown: {x: 0, y: 6},
+	  shipUp: {x: 0, y: -6},
 	
 	  // rock options
 	  rockRadius: 35,
 	  offsetRock: 60,
 	
 	  canvasWidth: 800,
-	  canvasHeight: 800
+	  canvasHeight: 600
 	
 	};
 
@@ -561,6 +562,7 @@
 	function addImages(imagesArray){
 	
 	    imagesArray.forEach((imageName)=>{
+	      
 	      let img = new Image();
 	      img.onload = function () {
 	        images[imageName] = img;
@@ -642,8 +644,8 @@
 	Utils.inherits(Ship, MovingObject);
 	
 	Ship.prototype.addListeners = function (){
-	  document.addEventListener("keydown",this._handleKeyDown.bind(this));
-	  document.addEventListener("keyup",this._handleKeyUp.bind(this));
+	  document.addEventListener("keydown", this._handleKeyDown.bind(this));
+	  document.addEventListener("keyup", this._handleKeyUp.bind(this));
 	};
 	
 	Ship.prototype._handleKeyDown = function(e) {
@@ -710,7 +712,7 @@
 	  if (this.upPressed === true && this.y_pos > this.radius) {
 	    this.moveObj(Utils.shipUp);
 	  }
-	  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.width - this.radius) {
+	  if (this.downPressed === true && this.y_pos < this.game.ctx.canvas.height - this.radius) {
 	    this.moveObj(Utils.shipDown);
 	  }
 	  if (this.spacePressed === true) {
@@ -832,7 +834,7 @@
 	    this.frameX = 0;
 	    this.frameY += this.frameHeight;
 	  }
-	  // do this later
+	
 	  if (this.frameY > 1152) {
 	    this.game.explosions.shift();
 	      }

@@ -29,7 +29,7 @@ function Game(ctx){
 // draw methods
 
 Game.prototype.makeShip = function () {
-  let ship = new Ship({x_pos: 400, y_pos: 720, radius: 25, game: this, image: Images.ship});
+  let ship = new Ship({x_pos: 400, y_pos: 520, radius: 25, game: this, image: Images.ship});
   this.ship.push(ship);
 };
 
@@ -60,9 +60,8 @@ Game.prototype.makeLives = function () {
 
 Game.prototype.makeRocks = function (){
   let rocks = new SpaceRock({
-    x_pos: 600,
-    y_pos: 600,
-    radius: 5,
+    x_pos: 400,
+    y_pos: 400,
     game: this
   });
 
@@ -78,7 +77,7 @@ Game.prototype.drawScore = function (){
 
 Game.prototype.makeAliens = function (){
   for (let i = 100; i <= 800 ;i += 150) {
-    for (let j = 100; j <= 300; j += 50){
+    for (let j = 100; j <= 200; j += 50){
       let alien = new Alien({
         x_pos: i,
         y_pos: j,
@@ -98,14 +97,14 @@ Game.prototype.makeSpecialAlien = function () {
 
   let alienLeft = new SpecialAlien({
     x_pos: 0 - Utils.alienRadius,
-    y_pos: Math.random()*200 + 300,
+    y_pos: Math.random()*100 + 300,
     move_x: Utils.specialAlienMove,
     game: this
   });
 
   let alienRight = new SpecialAlien({
     x_pos: this.ctx.canvas.width + Utils.alienRadius,
-    y_pos: Math.random()*200 + 300,
+    y_pos: Math.random()*100 + 300,
     move_x: -Utils.specialAlienMove,
     game: this
   });
@@ -299,9 +298,9 @@ Game.prototype.setup = function (){
 
 Game.prototype.play = function (){
 
-  this.regularSpawn = setInterval(this.makeAliens.bind(this), 30000);
-  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), 4000);
-  this.timer = setInterval(this.moveAll.bind(this), 60);
+  this.regularSpawn = setInterval(this.makeAliens.bind(this), Utils.alienSpawnRate);
+  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), Utils.specialAlienSpawnRate);
+  this.timer = setInterval(this.moveAll.bind(this), 30);
 
   this.intervals.push(this.regularSpawn);
   this.intervals.push(this.specialSpawn);
