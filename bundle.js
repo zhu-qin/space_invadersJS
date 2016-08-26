@@ -47,21 +47,33 @@
 	const Game = __webpack_require__(1);
 	const Images = __webpack_require__(6);
 	
-	var canvas = document.getElementById('canvas');
-	var ctx = canvas.getContext('2d');
+	let canvas = document.getElementById('canvas');
+	let ctx = canvas.getContext('2d');
 	ctx.strokeStyle = "transparent";
+	
+	let score = document.getElementById('score');
+	let scoreCtx = score.getContext('2d');
+	
+	function GameView(ctx, scoreCtx) {
+	  this.ctx = ctx;
+	  this.scoreCtx = scoreCtx;
+	  this.game = new Game(ctx, scoreCtx);
+	}
+	
+	GameView.prototype.start = function (){
+	  this.game.showMenu();
+	};
 	
 	
 	
 	let load = function (){
 	  if (Images.loaded) {
-	    let game = new Game(ctx);
-	    game.showMenu();
-	    clearInterval(interval);
+	    let gameView = new GameView(ctx, scoreCtx);
+	    gameView.start();
 	  }
 	};
 	
-	let interval = setInterval(load, 300);
+	let interval = setTimeout(load, 800);
 
 
 /***/ },
@@ -78,8 +90,10 @@
 	const Explosion = __webpack_require__(10);
 	const Images = __webpack_require__(6);
 	
-	function Game(ctx){
+	function Game(ctx, scoreCtx, scores){
 	  this.ctx = ctx;
+	  this.scores = scores || [];
+	  this.scoreCtx = scoreCtx;
 	  this.aliens = [];
 	  this.rocks = [];
 	  this.shipBullets = [];
@@ -99,7 +113,7 @@
 	// draw methods
 	
 	Game.prototype.makeShip = function () {
-	  let ship = new Ship({x_pos: 400, y_pos: 520, radius: 25, game: this, image: Images.ship});
+	  let ship = new Ship({x_pos: 400, y_pos: 575, radius: 25, game: this, image: Images.ship});
 	  this.ship.push(ship);
 	};
 	
@@ -258,12 +272,16 @@
 	      this.alienBullets.shift();
 	    }
 	
+	// alien bullets to ship
 	    if (bullet.collideWith(this.ship[0])){
 	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
 	      this.alienBullets.splice(bulletIndex, 1);
 	      this.shipLives.pop();
+	      this.ship.shift();
+	      this.makeShip();
 	    }
 	
+	// alien bullet to rock
 	    this.rocks.forEach((rock) => {
 	      if (bullet.collideWith(rock)){
 	        this.makeExplosion({x: rock.x_pos - Utils.offsetExplosion, y: rock.y_pos - Utils.offsetExplosion});
@@ -287,9 +305,15 @@
 	          this.score += 50;
 	        }
 	          this.score += 10;
-	      }
+	        }
 	    });
 	
+	    if (rock.collideWith(this.ship[0])){
+	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
+	      this.shipLives.pop();
+	      this.ship.shift();
+	      this.makeShip();
+	    }
 	  });
 	};
 	
@@ -309,14 +333,14 @@
 	};
 	
 	
-	Game.prototype.gameWon = function () {
-	  if (this.aliens.length === 0) {
-	    this.intervals.forEach((int)=> {
-	      clearInterval(int);
-	    });
-	    this.showMenu();
-	  }
-	};
+	// Game.prototype.gameWon = function () {
+	//   if (this.aliens.length === 0) {
+	//     this.intervals.forEach((int)=> {
+	//       clearInterval(int);
+	//     });
+	//     this.showMenu();
+	//   }
+	// };
 	
 	Game.prototype.gameLost = function () {
 	  if (this.shipLives.length === 0) {
@@ -324,7 +348,6 @@
 	      clearInterval(int);
 	    });
 	    this.restart();
-	
 	  }
 	};
 	Game.prototype.drawAll = function (){
@@ -353,7 +376,6 @@
 	  this.wobbleAliens();
 	  this.moveRocks();
 	  this.drawAll();
-	  this.gameWon();
 	  this.gameLost();
 	};
 	
@@ -378,8 +400,21 @@
 	};
 	
 	Game.prototype.restart = function(){
-	  let game = new Game(this.ctx);
+	  this.scores.push(this.score);
+	  this.scoreBoard();
+	  let game = new Game(this.ctx, this.scoreCtx, this.scores);
 	  game.showMenu();
+	};
+	
+	Game.prototype.scoreBoard = function (){
+	    this.scoreCtx.font = "36px serif";
+	    this.scoreCtx.fillStyle = "#000000";
+	    this.scoreCtx.fillText("Score", 0,30);
+	    this.scores.forEach((score, index) => {
+	      this.scoreCtx.font = "24px serif";
+	      this.scoreCtx.fillStyle = "#000000";
+	      this.scoreCtx.fillText(`${index + 1}: ${score}`, 0, 60 + index*20);
+	  });
 	};
 	
 	Game.prototype.showMenu = function (){
