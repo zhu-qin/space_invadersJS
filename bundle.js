@@ -52,12 +52,16 @@
 	ctx.strokeStyle = "transparent";
 	
 	
-	setTimeout( function () {
+	
+	let load = function (){
 	  if (Images.loaded) {
 	    let game = new Game(ctx);
 	    game.showMenu();
+	    clearInterval(interval);
 	  }
-	}, 500);
+	};
+	
+	let interval = setInterval(load, 300);
 
 
 /***/ },
