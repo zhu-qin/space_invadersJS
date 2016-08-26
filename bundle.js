@@ -64,16 +64,14 @@
 	  this.game.showMenu();
 	};
 	
-	
-	
 	let load = function (){
-	  if (Images.loaded) {
+	
 	    let gameView = new GameView(ctx, scoreCtx);
 	    gameView.start();
-	  }
+	  
 	};
 	
-	let interval = setTimeout(load, 800);
+	Images.loadImages(load);
 
 
 /***/ },
@@ -594,26 +592,6 @@
 /* 6 */
 /***/ function(module, exports) {
 
-	var images = {
-	  loading: 0,
-	  loaded: false
-	};
-	function addImages(imagesArray){
-	
-	    imagesArray.forEach((imageName)=>{
-	      
-	      let img = new Image();
-	      img.onload = function () {
-	        images[imageName] = img;
-	        images.loading += 1;
-	        if (images.loading === imagesArray.length) {
-	          images.loaded = true;
-	        }
-	      };
-	      img.src = `space_invaders_game/images/${imageName}.png`;
-	    });
-	}
-	
 	let imageFiles = [
 	  'background',
 	  'explosion',
@@ -626,9 +604,33 @@
 	  'rocks'
 	];
 	
-	addImages(imageFiles);
+	const Images = {
+	  loading: 0,
+	  loaded: false,
 	
-	module.exports = images;
+	  loadImages: function(callback){
+	    imageFiles.forEach((imageName)=>{
+	      let img = new Image();
+	      img.onload = function () {
+	        Images[imageName] = img;
+	        Images.loading += 1;
+	        if (Images.loading === imageFiles.length) {
+	          Images.loaded = true;
+	        }
+	        if (Images.loaded) {
+	          callback();
+	        }
+	      };
+	      img.src = `space_invaders_game/images/${imageName}.png`;
+	    });
+	  }
+	
+	};
+	
+	
+	
+	
+	module.exports = Images;
 
 
 /***/ },

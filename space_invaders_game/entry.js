@@ -18,13 +18,11 @@ GameView.prototype.start = function (){
   this.game.showMenu();
 };
 
-
-
 let load = function (){
-  if (Images.loaded) {
+
     let gameView = new GameView(ctx, scoreCtx);
     gameView.start();
-  }
+  
 };
 
-let interval = setTimeout(load, 800);
+Images.loadImages(load);
