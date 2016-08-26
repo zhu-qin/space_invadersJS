@@ -65,10 +65,10 @@
 	};
 	
 	let load = function (){
-	
+	  if (Images.loaded) {
 	    let gameView = new GameView(ctx, scoreCtx);
 	    gameView.start();
-	  
+	  }
 	};
 	
 	Images.loadImages(load);
