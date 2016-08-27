@@ -20,9 +20,9 @@ Utils.inherits(SpaceRock, MovingObject);
 
 
 SpaceRock.prototype.draw = function (){
-  this.game.ctx.beginPath();
-  this.game.ctx.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI*2, true);
-  this.game.ctx.stroke();
+  // this.game.ctx.beginPath();
+  // this.game.ctx.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI*2, true);
+  // this.game.ctx.stroke();
 
   this.ctx.drawImage(
     this.image,
@@ -42,7 +42,7 @@ SpaceRock.prototype.draw = function (){
     this.frameX = 0;
     this.frameY += this.frameHeight;
   }
-  // do this later
+
   if (this.frameY >= 2048/2) {
     this.frameY = 0;
       }

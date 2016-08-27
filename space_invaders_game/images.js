@@ -12,19 +12,15 @@ let imageFiles = [
 
 const Images = {
   loading: 0,
-  loaded: false,
 
-  loadImages: function(callback){
+  loadImages: function(startGame){
     imageFiles.forEach((imageName)=>{
       let img = new Image();
       img.onload = function () {
         Images[imageName] = img;
         Images.loading += 1;
         if (Images.loading === imageFiles.length) {
-          Images.loaded = true;
-        }
-        if (Images.loaded) {
-          callback();
+          startGame();
         }
       };
       img.src = `space_invaders_game/images/${imageName}.png`;
@@ -32,8 +28,6 @@ const Images = {
   }
 
 };
-
-
 
 
 module.exports = Images;

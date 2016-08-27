@@ -31,7 +31,18 @@ function Game(ctx, scoreCtx, scores){
 // draw methods
 
 Game.prototype.makeShip = function () {
-  let ship = new Ship({x_pos: 400, y_pos: 575, radius: 25, game: this, image: Images.ship});
+  let invulnerabilityTimer = 60;
+  if (this.shipLives.length === 0) {
+    invulnerabilityTimer = 0;
+  }
+  let ship = new Ship({
+     x_pos: 400,
+     y_pos: 575,
+     radius: 25,
+     game: this,
+     image: Images.ship,
+     invulnerabilityTimer: invulnerabilityTimer
+   });
   this.ship.push(ship);
 };
 
@@ -92,7 +103,6 @@ Game.prototype.makeAliens = function (){
   }
 };
 
-// work on this tommorrow
 Game.prototype.makeSpecialAlien = function () {
   let x = Math.floor(Math.random()*1.9)*800;
   let y = Math.random()*400 + 200;
@@ -118,7 +128,6 @@ Game.prototype.makeSpecialAlien = function () {
 Game.prototype.clear = function () {
   this.ctx.clearRect(0,0, canvas.width, canvas.height);
 };
-
 
 
 Game.prototype.drawBackground = function () {
@@ -191,7 +200,7 @@ Game.prototype.moveAlienBullets = function (){
     }
 
 // alien bullets to ship
-    if (bullet.collideWith(this.ship[0])){
+    if (bullet.collideWith(this.ship[0]) && this.ship[0].invulnerabilityTimer === 0){
       this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
       this.alienBullets.splice(bulletIndex, 1);
       this.shipLives.pop();
@@ -207,8 +216,6 @@ Game.prototype.moveAlienBullets = function (){
         this.alienBullets.splice(bulletIndex, 1);
       }
     });
-
-
   });
 };
 
@@ -226,7 +233,7 @@ Game.prototype.moveRocks = function () {
         }
     });
 
-    if (rock.collideWith(this.ship[0])){
+    if (rock.collideWith(this.ship[0]) && this.ship[0].invulnerabilityTimer === 0){
       this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
       this.shipLives.pop();
       this.ship.shift();
@@ -235,20 +242,15 @@ Game.prototype.moveRocks = function () {
   });
 };
 
-Game.prototype.setAlienFire = function () {
-  let alienFire = function () {
+Game.prototype.alienFire = function () {
     let index = Math.floor(Math.random()*this.aliens.length);
     this.aliens[index].fire();
-
-    this.aliens.forEach((alien) => {
-      if (alien instanceof SpecialAlien) {
+    this.specialAliens.forEach((alien) => {
         alien.fire();
-      }
     });
-  }.bind(this);
-  this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
-  this.intervals.push(this.alienFire);
+
 };
+
 
 
 // Game.prototype.gameWon = function () {
@@ -298,20 +300,21 @@ Game.prototype.moveAll = function () {
 };
 
 Game.prototype.setup = function (){
+  this.makeShip();
   this.makeLives();
   this.makeAliens();
   this.makeSpecialAlien();
-  this.makeShip();
   this.makeRocks();
-  this.setAlienFire();
 };
 
 Game.prototype.play = function (){
 
   this.regularSpawn = setInterval(this.makeAliens.bind(this), Utils.alienSpawnRate);
   this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), Utils.specialAlienSpawnRate);
-  this.timer = setInterval(this.moveAll.bind(this), 30);
+  this.alienFire = setInterval(this.alienFire.bind(this), Utils.alienbulletFrequency);
+  this.timer = setInterval(this.moveAll.bind(this), Utils.refreshRate);
 
+  this.intervals.push(this.alienFire);
   this.intervals.push(this.regularSpawn);
   this.intervals.push(this.specialSpawn);
   this.intervals.push(this.timer);

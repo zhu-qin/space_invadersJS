@@ -54,21 +54,10 @@
 	let score = document.getElementById('score');
 	let scoreCtx = score.getContext('2d');
 	
-	function GameView(ctx, scoreCtx) {
-	  this.ctx = ctx;
-	  this.scoreCtx = scoreCtx;
-	  this.game = new Game(ctx, scoreCtx);
-	}
-	
-	GameView.prototype.start = function (){
-	  this.game.showMenu();
-	};
 	
 	let load = function (){
-	  if (Images.loaded) {
-	    let gameView = new GameView(ctx, scoreCtx);
-	    gameView.start();
-	  }
+	  let game = new Game(ctx, scoreCtx);
+	  game.showMenu();
 	};
 	
 	Images.loadImages(load);
@@ -111,7 +100,18 @@
 	// draw methods
 	
 	Game.prototype.makeShip = function () {
-	  let ship = new Ship({x_pos: 400, y_pos: 575, radius: 25, game: this, image: Images.ship});
+	  let invulnerabilityTimer = 60;
+	  if (this.shipLives.length === 0) {
+	    invulnerabilityTimer = 0;
+	  }
+	  let ship = new Ship({
+	     x_pos: 400,
+	     y_pos: 575,
+	     radius: 25,
+	     game: this,
+	     image: Images.ship,
+	     invulnerabilityTimer: invulnerabilityTimer
+	   });
 	  this.ship.push(ship);
 	};
 	
@@ -172,7 +172,6 @@
 	  }
 	};
 	
-	// work on this tommorrow
 	Game.prototype.makeSpecialAlien = function () {
 	  let x = Math.floor(Math.random()*1.9)*800;
 	  let y = Math.random()*400 + 200;
@@ -198,7 +197,6 @@
 	Game.prototype.clear = function () {
 	  this.ctx.clearRect(0,0, canvas.width, canvas.height);
 	};
-	
 	
 	
 	Game.prototype.drawBackground = function () {
@@ -271,7 +269,7 @@
 	    }
 	
 	// alien bullets to ship
-	    if (bullet.collideWith(this.ship[0])){
+	    if (bullet.collideWith(this.ship[0]) && this.ship[0].invulnerabilityTimer === 0){
 	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
 	      this.alienBullets.splice(bulletIndex, 1);
 	      this.shipLives.pop();
@@ -287,8 +285,6 @@
 	        this.alienBullets.splice(bulletIndex, 1);
 	      }
 	    });
-	
-	
 	  });
 	};
 	
@@ -306,7 +302,7 @@
 	        }
 	    });
 	
-	    if (rock.collideWith(this.ship[0])){
+	    if (rock.collideWith(this.ship[0]) && this.ship[0].invulnerabilityTimer === 0){
 	      this.makeExplosion({x: this.ship[0].x_pos - Utils.offsetExplosion, y: this.ship[0].y_pos - Utils.offsetExplosion});
 	      this.shipLives.pop();
 	      this.ship.shift();
@@ -315,20 +311,15 @@
 	  });
 	};
 	
-	Game.prototype.setAlienFire = function () {
-	  let alienFire = function () {
+	Game.prototype.alienFire = function () {
 	    let index = Math.floor(Math.random()*this.aliens.length);
 	    this.aliens[index].fire();
-	
-	    this.aliens.forEach((alien) => {
-	      if (alien instanceof SpecialAlien) {
+	    this.specialAliens.forEach((alien) => {
 	        alien.fire();
-	      }
 	    });
-	  }.bind(this);
-	  this.alienFire = setInterval(alienFire, Utils.bulletFrequency);
-	  this.intervals.push(this.alienFire);
+	
 	};
+	
 	
 	
 	// Game.prototype.gameWon = function () {
@@ -378,20 +369,21 @@
 	};
 	
 	Game.prototype.setup = function (){
+	  this.makeShip();
 	  this.makeLives();
 	  this.makeAliens();
 	  this.makeSpecialAlien();
-	  this.makeShip();
 	  this.makeRocks();
-	  this.setAlienFire();
 	};
 	
 	Game.prototype.play = function (){
 	
 	  this.regularSpawn = setInterval(this.makeAliens.bind(this), Utils.alienSpawnRate);
 	  this.specialSpawn = setInterval(this.makeSpecialAlien.bind(this), Utils.specialAlienSpawnRate);
-	  this.timer = setInterval(this.moveAll.bind(this), 30);
+	  this.alienFire = setInterval(this.alienFire.bind(this), Utils.alienbulletFrequency);
+	  this.timer = setInterval(this.moveAll.bind(this), Utils.refreshRate);
 	
+	  this.intervals.push(this.alienFire);
 	  this.intervals.push(this.regularSpawn);
 	  this.intervals.push(this.specialSpawn);
 	  this.intervals.push(this.timer);
@@ -468,11 +460,6 @@
 	
 	};
 	
-	// Alien.prototype.draw = function (){
-	//
-	// };
-	
-	
 	module.exports = Alien;
 
 
@@ -493,8 +480,8 @@
 	
 	// draw circles to see collisions and test
 	MovingObject.prototype.draw = function (){
-	  let x = this.x_pos;
-	  let y = this.y_pos;
+	  // let x = this.x_pos;
+	  // let y = this.y_pos;
 	  // this.game.ctx.beginPath();
 	  // this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
 	  // this.game.ctx.stroke();
@@ -502,7 +489,12 @@
 	};
 	
 	MovingObject.prototype.showImage = function () {
-	    this.game.ctx.drawImage(this.image, this.x_pos - Utils.offsetObject , this.y_pos - Utils.offsetObject, 50, 50);
+	    this.game.ctx.drawImage(
+	      this.image, this.x_pos - Utils.offsetObject,
+	      this.y_pos - Utils.offsetObject,
+	      50,
+	      50
+	    );
 	};
 	
 	MovingObject.prototype.moveObj = function (vector){
@@ -541,18 +533,14 @@
 	  alienRight: {x: 4, y: 0},
 	  alienLeft: {x: -4, y: 0},
 	  alienDown: {x: 0, y: 10},
-	  alienSpawnRate: 15000,
+	  alienSpawnRate: 13000,
 	  specialAlienSpawnRate: 4000,
 	
 	  alienBullet: {x: 0, y: 12},
-	  shipBullet: {x: 0, y: -20},
-	
 	
 	  hoverGap: 40,
 	  bulletRadius: 3,
-	  bulletFrequency: 500,
-	  offsetObject: 25,
-	  offsetExplosion: 50,
+	  alienbulletFrequency: 150,
 	
 	  // ship options
 	  shipHealth: 5,
@@ -560,14 +548,21 @@
 	  shipLeft: {x: -6, y: 0},
 	  shipDown: {x: 0, y: 6},
 	  shipUp: {x: 0, y: -6},
+	  shipBullet: {x: 0, y: -20},
+	  invulnerabilityTimer: 120,
 	
 	  // rock options
 	  rockRadius: 35,
 	  offsetRock: 60,
 	
+	  // canvas options
 	  canvasWidth: 800,
-	  canvasHeight: 600
+	  canvasHeight: 600,
+	  refreshRate: 25,
 	
+	  // image options
+	  offsetObject: 25,
+	  offsetExplosion: 50,
 	};
 
 
@@ -606,19 +601,15 @@
 	
 	const Images = {
 	  loading: 0,
-	  loaded: false,
 	
-	  loadImages: function(callback){
+	  loadImages: function(startGame){
 	    imageFiles.forEach((imageName)=>{
 	      let img = new Image();
 	      img.onload = function () {
 	        Images[imageName] = img;
 	        Images.loading += 1;
 	        if (Images.loading === imageFiles.length) {
-	          Images.loaded = true;
-	        }
-	        if (Images.loaded) {
-	          callback();
+	          startGame();
 	        }
 	      };
 	      img.src = `space_invaders_game/images/${imageName}.png`;
@@ -626,8 +617,6 @@
 	  }
 	
 	};
-	
-	
 	
 	
 	module.exports = Images;
@@ -671,14 +660,14 @@
 	
 	
 	function Ship(params){
+	  MovingObject.call(this, params);
 	  this.leftPressed = false;
 	  this.rightPressed = false;
 	  this.upPressed = false;
 	  this.downPressed = false;
 	  this.spacePressed = false;
-	
 	  this.timeOut = 0;
-	  MovingObject.call(this, params);
+	  this.invulnerabilityTimer = params.invulnerabilityTimer;
 	  this.startShip();
 	}
 	
@@ -763,6 +752,31 @@
 	    }
 	    this.timeOut += 1;
 	  }
+	
+	};
+	
+	Ship.prototype.draw = function (){
+	  // let x = this.x_pos;
+	  // let y = this.y_pos;
+	  // this.game.ctx.beginPath();
+	  // this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
+	  // this.game.ctx.stroke();
+	  if (this.invulnerabilityTimer%3 === 0) {
+	    this.showImage();
+	  }
+	
+	  if (this.invulnerabilityTimer > 0) {
+	    this.invulnerabilityTimer -= 1;
+	  }
+	};
+	
+	MovingObject.prototype.showImage = function () {
+	    this.game.ctx.drawImage(
+	      this.image, this.x_pos - Utils.offsetObject,
+	      this.y_pos - Utils.offsetObject,
+	      50,
+	      50
+	    );
 	};
 	
 	module.exports = Ship;
@@ -794,9 +808,9 @@
 	
 	
 	SpaceRock.prototype.draw = function (){
-	  this.game.ctx.beginPath();
-	  this.game.ctx.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI*2, true);
-	  this.game.ctx.stroke();
+	  // this.game.ctx.beginPath();
+	  // this.game.ctx.arc(this.x_pos, this.y_pos, this.radius, 0, Math.PI*2, true);
+	  // this.game.ctx.stroke();
 	
 	  this.ctx.drawImage(
 	    this.image,
@@ -816,7 +830,7 @@
 	    this.frameX = 0;
 	    this.frameY += this.frameHeight;
 	  }
-	  // do this later
+	
 	  if (this.frameY >= 2048/2) {
 	    this.frameY = 0;
 	      }

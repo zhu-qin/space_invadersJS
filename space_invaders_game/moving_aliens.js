@@ -30,9 +30,4 @@ Alien.prototype.fire = function () {
 
 };
 
-// Alien.prototype.draw = function (){
-//
-// };
-
-
 module.exports = Alien;

@@ -8,21 +8,10 @@ ctx.strokeStyle = "transparent";
 let score = document.getElementById('score');
 let scoreCtx = score.getContext('2d');
 
-function GameView(ctx, scoreCtx) {
-  this.ctx = ctx;
-  this.scoreCtx = scoreCtx;
-  this.game = new Game(ctx, scoreCtx);
-}
-
-GameView.prototype.start = function (){
-  this.game.showMenu();
-};
 
 let load = function (){
-  if (Images.loaded) {
-    let gameView = new GameView(ctx, scoreCtx);
-    gameView.start();
-  }
+  let game = new Game(ctx, scoreCtx);
+  game.showMenu();
 };
 
 Images.loadImages(load);

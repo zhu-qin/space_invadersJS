@@ -11,8 +11,8 @@ function MovingObject(params) {
 
 // draw circles to see collisions and test
 MovingObject.prototype.draw = function (){
-  let x = this.x_pos;
-  let y = this.y_pos;
+  // let x = this.x_pos;
+  // let y = this.y_pos;
   // this.game.ctx.beginPath();
   // this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
   // this.game.ctx.stroke();
@@ -20,7 +20,12 @@ MovingObject.prototype.draw = function (){
 };
 
 MovingObject.prototype.showImage = function () {
-    this.game.ctx.drawImage(this.image, this.x_pos - Utils.offsetObject , this.y_pos - Utils.offsetObject, 50, 50);
+    this.game.ctx.drawImage(
+      this.image, this.x_pos - Utils.offsetObject,
+      this.y_pos - Utils.offsetObject,
+      50,
+      50
+    );
 };
 
 MovingObject.prototype.moveObj = function (vector){

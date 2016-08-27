@@ -5,14 +5,14 @@ const Utils = require("./utils");
 
 
 function Ship(params){
+  MovingObject.call(this, params);
   this.leftPressed = false;
   this.rightPressed = false;
   this.upPressed = false;
   this.downPressed = false;
   this.spacePressed = false;
-
   this.timeOut = 0;
-  MovingObject.call(this, params);
+  this.invulnerabilityTimer = params.invulnerabilityTimer;
   this.startShip();
 }
 
@@ -97,6 +97,31 @@ Ship.prototype.moveShip = function () {
     }
     this.timeOut += 1;
   }
+
+};
+
+Ship.prototype.draw = function (){
+  // let x = this.x_pos;
+  // let y = this.y_pos;
+  // this.game.ctx.beginPath();
+  // this.game.ctx.arc(x, y, this.radius, 0, Math.PI*2, true);
+  // this.game.ctx.stroke();
+  if (this.invulnerabilityTimer%3 === 0) {
+    this.showImage();
+  }
+
+  if (this.invulnerabilityTimer > 0) {
+    this.invulnerabilityTimer -= 1;
+  }
+};
+
+MovingObject.prototype.showImage = function () {
+    this.game.ctx.drawImage(
+      this.image, this.x_pos - Utils.offsetObject,
+      this.y_pos - Utils.offsetObject,
+      50,
+      50
+    );
 };
 
 module.exports = Ship;
