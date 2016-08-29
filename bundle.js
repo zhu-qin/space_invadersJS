@@ -146,7 +146,6 @@
 	    y_pos: 400,
 	    game: this
 	  });
-	
 	  this.rocks.push(rocks);
 	};
 	
@@ -154,7 +153,6 @@
 	    this.ctx.font = "48px serif";
 	    this.ctx.fillStyle = "#fff";
 	    this.ctx.fillText(`Score: ${this.score}`, 10, 40);
-	
 	};
 	
 	Game.prototype.makeAliens = function (){
@@ -264,7 +262,7 @@
 	Game.prototype.moveAlienBullets = function (){
 	  this.alienBullets.forEach((bullet, bulletIndex) => {
 	    bullet.moveObj(Utils.alienBullet);
-	    if (bullet.y_pos >= Utils.canvasHeight*1.2) {
+	    if (bullet.y_pos >= Utils.canvasHeight*1.4) {
 	      this.alienBullets.shift();
 	    }
 	
@@ -530,8 +528,8 @@
 	  alienRadius: 25,
 	  specialAlienMove: 5,
 	
-	  alienRight: {x: 4, y: 0},
-	  alienLeft: {x: -4, y: 0},
+	  alienRight: {x: 5, y: 0},
+	  alienLeft: {x: -5, y: 0},
 	  alienDown: {x: 0, y: 10},
 	  alienSpawnRate: 13000,
 	  specialAlienSpawnRate: 4000,
@@ -540,7 +538,7 @@
 	
 	  hoverGap: 40,
 	  bulletRadius: 3,
-	  alienbulletFrequency: 150,
+	  alienbulletFrequency: 120,
 	
 	  // ship options
 	  shipHealth: 5,

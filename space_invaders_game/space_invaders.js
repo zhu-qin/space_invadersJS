@@ -77,7 +77,6 @@ Game.prototype.makeRocks = function (){
     y_pos: 400,
     game: this
   });
-
   this.rocks.push(rocks);
 };
 
@@ -85,7 +84,6 @@ Game.prototype.drawScore = function (){
     this.ctx.font = "48px serif";
     this.ctx.fillStyle = "#fff";
     this.ctx.fillText(`Score: ${this.score}`, 10, 40);
-
 };
 
 Game.prototype.makeAliens = function (){
@@ -195,7 +193,7 @@ Game.prototype.moveShipBullets = function (){
 Game.prototype.moveAlienBullets = function (){
   this.alienBullets.forEach((bullet, bulletIndex) => {
     bullet.moveObj(Utils.alienBullet);
-    if (bullet.y_pos >= Utils.canvasHeight*1.2) {
+    if (bullet.y_pos >= Utils.canvasHeight*1.4) {
       this.alienBullets.shift();
     }
 
