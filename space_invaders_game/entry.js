@@ -5,12 +5,14 @@ let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
 ctx.strokeStyle = "transparent";
 
-let score = document.getElementById('score');
-let scoreCtx = score.getContext('2d');
+if (!localStorage.highScores) {
+  localStorage.highScores = "0";
+}
+
 
 
 let load = function (){
-  let game = new Game(ctx, scoreCtx);
+  let game = new Game(ctx);
   game.showMenu();
 };
 

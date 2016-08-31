@@ -8,10 +8,8 @@ const SpaceRock = require('./space_rock');
 const Explosion = require('./explosion.js');
 const Images = require('./images');
 
-function Game(ctx, scoreCtx, scores){
+function Game(ctx){
   this.ctx = ctx;
-  this.scores = scores || [];
-  this.scoreCtx = scoreCtx;
   this.aliens = [];
   this.rocks = [];
   this.shipBullets = [];
@@ -21,11 +19,9 @@ function Game(ctx, scoreCtx, scores){
   this.specialAliens = [];
   this.explosions = [];
   this.counter = 0;
-  this.shipHealth = Utils.shipHealth;
   this.score = 0;
   this.scoreArray = [];
   this.intervals = [];
-  this.backgroundImage = Images.background;
 }
 
 // draw methods
@@ -59,7 +55,7 @@ Game.prototype.makeExplosion = function (pos) {
 };
 
 Game.prototype.makeLives = function () {
-  for (let i = 1; i <= this.shipHealth; i += 1) {
+  for (let i = 1; i <= Utils.shipLives; i += 1) {
     let shipLife = new MovingObject({
       x_pos: this.ctx.canvas.width - i*50,
       y_pos: 40,
@@ -81,14 +77,15 @@ Game.prototype.makeRocks = function (){
 };
 
 Game.prototype.drawScore = function (){
-    this.ctx.font = "48px serif";
+    this.ctx.font = "24px serif";
     this.ctx.fillStyle = "#fff";
-    this.ctx.fillText(`Score: ${this.score}`, 10, 40);
+    this.ctx.fillText(`High Score: ${localStorage.highScores}`, 10, 20);
+    this.ctx.fillText(`Current Score: ${this.score}`, 10, 40);
 };
 
 Game.prototype.makeAliens = function (){
-  for (let i = 100; i <= 800 ;i += 150) {
-    for (let j = 100; j <= 200; j += 50){
+  for (let i = 115; i <= 800 ;i += 120) {
+    for (let j = 80; j <= 200; j += 50){
       let alien = new Alien({
         x_pos: i,
         y_pos: j,
@@ -269,7 +266,7 @@ Game.prototype.gameLost = function () {
   }
 };
 Game.prototype.drawAll = function (){
-  this.drawBackground();
+  // this.drawBackground();
   this.drawScore();
   let allObjects = this.aliens.concat(
     this.ship,
@@ -319,22 +316,13 @@ Game.prototype.play = function (){
 };
 
 Game.prototype.restart = function(){
-  this.scores.push(this.score);
-  this.scoreBoard();
-  let game = new Game(this.ctx, this.scoreCtx, this.scores);
+  if (this.score > localStorage.highScores){
+    localStorage.highScores = this.score.toString();
+  }
+  let game = new Game(this.ctx);
   game.showMenu();
 };
 
-Game.prototype.scoreBoard = function (){
-    this.scoreCtx.font = "36px serif";
-    this.scoreCtx.fillStyle = "#000000";
-    this.scoreCtx.fillText("Score", 0,30);
-    this.scores.forEach((score, index) => {
-      this.scoreCtx.font = "24px serif";
-      this.scoreCtx.fillStyle = "#000000";
-      this.scoreCtx.fillText(`${index + 1}: ${score}`, 0, 60 + index*20);
-  });
-};
 
 Game.prototype.showMenu = function (){
   this.clear();

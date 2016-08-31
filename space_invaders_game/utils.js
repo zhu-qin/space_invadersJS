@@ -23,7 +23,7 @@ module.exports = {
   alienbulletFrequency: 120,
 
   // ship options
-  shipHealth: 5,
+  shipLives: 5,
   shipRight: {x: 6, y: 0},
   shipLeft: {x: -6, y: 0},
   shipDown: {x: 0, y: 6},

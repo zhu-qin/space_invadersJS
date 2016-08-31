@@ -8,7 +8,7 @@ span, article, footer, time, small {
   outline: 0;
   border: 0;
   font: inherit;
-  font-family: "Helvetica", sans-serif;
+  font-family: 'Bungee Shade', cursive;
   color: inherit;
   text-align: inherit;
   text-decoration: inherit;
@@ -16,6 +16,10 @@ span, article, footer, time, small {
   box-sizing: inherit;
   background-color: inherit;
   list-style: none;
+}
+
+body {
+  background-image: url("pics/background.png");
 }
 
 .clear-fix:after {
@@ -26,22 +30,46 @@ span, article, footer, time, small {
 
 .wrapper {
   width: 800px;
-  float: left;
-  border: 1px solid black;
+  margin: auto;
+  border: 1px solid white;
   height: 600px;
 }
 
-.score-board {
-  float:left;
+.title {
+  text-align: center;
   display: block;
-  height: 300px;
-  width: 200px;
-  border: 1px solid black;
+  margin: auto;
+  height: 50px;
+  font-size: 40px;
+  color: #fff;
+  padding: 20px;
 }
 
-.intro-social-buttons {
-  padding-left: 20px;
-  background: transparent;
-  width: 200px;
+.title:hover {
+  color: #00cc00;
+}
+
+.button-list {
+  position: fixed;
+  float: left;
+  top:40%;
+  left:0;
+}
+
+.button {
+  border-radius: 5%;
+  text-align: center;
   display: block;
+  min-width: 100px;
+  height: 50px;
+  font-size: 20px;
+  line-height: 45px;
+  background-color: #fff;
+  padding: 5px;
+  margin: 20px 10px;
+  color: gray;
+}
+
+.button:hover {
+  background: #00cc00;
 }
