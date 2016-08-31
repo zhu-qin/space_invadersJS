@@ -8,21 +8,24 @@ webpack.
 ````javascript
 // Game parameters can be set in the utils.js file.
 // ship options
-shipHealth: 5,
+// ship options
+shipLives: 5,
 shipRight: {x: 6, y: 0},
 shipLeft: {x: -6, y: 0},
 shipDown: {x: 0, y: 6},
 shipUp: {x: 0, y: -6},
+shipBullet: {x: 0, y: -20},
+invulnerabilityTimer: 120,
 
 // rock options
 rockRadius: 35,
 offsetRock: 60,
 
+// canvas options
 canvasWidth: 800,
-canvasHeight: 600
+canvasHeight: 600,
+refreshRate: 25,
 ````
-
-
 
 ````javascript
 // Images folder contains the sprites and images required by the game.
@@ -34,22 +37,6 @@ canvasHeight: 600
 
 // If you want to add additional art alter the images.js file to include more
 // images to load.
-function addImages(imagesArray){
-
-    imagesArray.forEach((imageName)=>{
-
-      let img = new Image();
-      img.onload = function () {
-        images[imageName] = img;
-        images.loading += 1;
-        if (images.loading === imagesArray.length) {
-          images.loaded = true;
-        }
-      };
-      img.src = `space_invaders_game/images/${imageName}.png`;
-    });
-}
-
 let imageFiles = [
   'background',
   'explosion',
@@ -61,5 +48,23 @@ let imageFiles = [
   'green_invader',
   'rocks'
 ];
+
+const Images = {
+  loading: 0,
+  loadImages: function(startGame){
+    imageFiles.forEach((imageName)=>{
+      let img = new Image();
+      img.onload = function () {
+        Images[imageName] = img;
+        Images.loading += 1;
+        if (Images.loading === imageFiles.length) {
+          startGame();
+        }
+      };
+      img.src = `space_invaders_game/images/${imageName}.png`;
+    });
+  }
+};
+
 
 ````
