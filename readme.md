@@ -1,5 +1,7 @@
 #Space Invaders with a rock.
 
+[Space Invaders with a rock](https://www.qin-zhu.com/space_invadersJS/)
+
 Space Invaders with a rock is a game inspired by the classic game Space Invaders.
 It is made on HTML canvas with vanilla JS.
 
@@ -7,7 +9,6 @@ The game lives in the space_invaders_game folder. entry.js is the entry for
 webpack.
 ````javascript
 // Game parameters can be set in the utils.js file.
-// ship options
 // ship options
 shipLives: 5,
 shipRight: {x: 6, y: 0},
@@ -38,7 +39,6 @@ refreshRate: 25,
 // If you want to add additional art alter the images.js file to include more
 // images to load.
 let imageFiles = [
-  'background',
   'explosion',
   'ship',
   'ship_bullet',
@@ -51,12 +51,13 @@ let imageFiles = [
 
 const Images = {
   loading: 0,
-  loadImages: function(startGame){
+  loadImages: function(ctx, startGame){
     imageFiles.forEach((imageName)=>{
       let img = new Image();
       img.onload = function () {
         Images[imageName] = img;
         Images.loading += 1;
+        ctx.fillText("LOADING...", 350, 300);
         if (Images.loading === imageFiles.length) {
           startGame();
         }
@@ -66,5 +67,6 @@ const Images = {
   }
 };
 
+module.exports = Images;
 
 ````
