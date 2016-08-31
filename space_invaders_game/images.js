@@ -1,5 +1,4 @@
 let imageFiles = [
-  'background',
   'explosion',
   'ship',
   'ship_bullet',
@@ -12,13 +11,13 @@ let imageFiles = [
 
 const Images = {
   loading: 0,
-
-  loadImages: function(startGame){
+  loadImages: function(ctx, startGame){
     imageFiles.forEach((imageName)=>{
       let img = new Image();
       img.onload = function () {
         Images[imageName] = img;
         Images.loading += 1;
+        ctx.fillText("LOADING...", 350, 300);
         if (Images.loading === imageFiles.length) {
           startGame();
         }
@@ -26,8 +25,6 @@ const Images = {
       img.src = `space_invaders_game/images/${imageName}.png`;
     });
   }
-
 };
-
 
 module.exports = Images;

@@ -77,8 +77,6 @@ Game.prototype.makeRocks = function (){
 };
 
 Game.prototype.drawScore = function (){
-    this.ctx.font = "24px serif";
-    this.ctx.fillStyle = "#fff";
     this.ctx.fillText(`High Score: ${localStorage.highScores}`, 10, 20);
     this.ctx.fillText(`Current Score: ${this.score}`, 10, 40);
 };

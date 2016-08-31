@@ -49,6 +49,8 @@
 	
 	let canvas = document.getElementById('canvas');
 	let ctx = canvas.getContext('2d');
+	ctx.font = "24px serif";
+	ctx.fillStyle = "#fff";
 	ctx.strokeStyle = "transparent";
 	
 	if (!localStorage.highScores) {
@@ -62,7 +64,7 @@
 	  game.showMenu();
 	};
 	
-	Images.loadImages(load);
+	Images.loadImages(ctx, load);
 
 
 /***/ },
@@ -148,8 +150,6 @@
 	};
 	
 	Game.prototype.drawScore = function (){
-	    this.ctx.font = "24px serif";
-	    this.ctx.fillStyle = "#fff";
 	    this.ctx.fillText(`High Score: ${localStorage.highScores}`, 10, 20);
 	    this.ctx.fillText(`Current Score: ${this.score}`, 10, 40);
 	};
@@ -576,7 +576,6 @@
 /***/ function(module, exports) {
 
 	let imageFiles = [
-	  'background',
 	  'explosion',
 	  'ship',
 	  'ship_bullet',
@@ -589,13 +588,13 @@
 	
 	const Images = {
 	  loading: 0,
-	
-	  loadImages: function(startGame){
+	  loadImages: function(ctx, startGame){
 	    imageFiles.forEach((imageName)=>{
 	      let img = new Image();
 	      img.onload = function () {
 	        Images[imageName] = img;
 	        Images.loading += 1;
+	        ctx.fillText("LOADING...", 350, 300);
 	        if (Images.loading === imageFiles.length) {
 	          startGame();
 	        }
@@ -603,9 +602,7 @@
 	      img.src = `space_invaders_game/images/${imageName}.png`;
 	    });
 	  }
-	
 	};
-	
 	
 	module.exports = Images;
 

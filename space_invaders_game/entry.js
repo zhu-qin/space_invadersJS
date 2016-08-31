@@ -3,6 +3,8 @@ const Images = require('./images');
 
 let canvas = document.getElementById('canvas');
 let ctx = canvas.getContext('2d');
+ctx.font = "24px serif";
+ctx.fillStyle = "#fff";
 ctx.strokeStyle = "transparent";
 
 if (!localStorage.highScores) {
@@ -16,4 +18,4 @@ let load = function (){
   game.showMenu();
 };
 
-Images.loadImages(load);
+Images.loadImages(ctx, load);
