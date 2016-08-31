@@ -1,6 +1,6 @@
 #Space Invaders with a rock.
 
-[Space Invaders with a rock](https://www.qin-zhu.com/space_invadersJS/)
+##[Space Invaders with a rock](http://www.qin-zhu.com/space_invadersJS/)
 
 Space Invaders with a rock is a game inspired by the classic game Space Invaders.
 It is made on HTML canvas with vanilla JS.
