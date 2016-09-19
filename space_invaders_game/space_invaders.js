@@ -20,7 +20,6 @@ function Game(ctx){
   this.explosions = [];
   this.counter = 0;
   this.score = 0;
-  this.scoreArray = [];
   this.intervals = [];
 }
 
@@ -273,7 +272,6 @@ Game.prototype.drawAll = function (){
     this.explosions,
     this.rocks,
     this.shipLives,
-    this.scoreArray,
     this.specialAliens
   );
   allObjects.forEach((obj) => {
@@ -318,17 +316,17 @@ Game.prototype.restart = function(){
     localStorage.highScores = this.score.toString();
   }
   let game = new Game(this.ctx);
-  game.showMenu();
+  game.showMenu(Images.gameover);
 };
 
 
-Game.prototype.showMenu = function (){
+Game.prototype.showMenu = function (image = Images.intro){
   this.clear();
-  this.setup();
-  this.drawAll();
-  this.ctx.drawImage(Images.intro, 280, 300);
+  this.ctx.drawImage(image, 280, 300);
   let play = (e) => {
     if (e.keyCode === 13) {
+            this.setup();
+            this.drawAll();
             this.play();
             window.removeEventListener('keydown', play);
           }

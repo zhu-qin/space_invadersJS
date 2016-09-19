@@ -93,7 +93,6 @@
 	  this.explosions = [];
 	  this.counter = 0;
 	  this.score = 0;
-	  this.scoreArray = [];
 	  this.intervals = [];
 	}
 	
@@ -346,7 +345,6 @@
 	    this.explosions,
 	    this.rocks,
 	    this.shipLives,
-	    this.scoreArray,
 	    this.specialAliens
 	  );
 	  allObjects.forEach((obj) => {
@@ -391,17 +389,17 @@
 	    localStorage.highScores = this.score.toString();
 	  }
 	  let game = new Game(this.ctx);
-	  game.showMenu();
+	  game.showMenu(Images.gameover);
 	};
 	
 	
-	Game.prototype.showMenu = function (){
+	Game.prototype.showMenu = function (image = Images.intro){
 	  this.clear();
-	  this.setup();
-	  this.drawAll();
-	  this.ctx.drawImage(Images.intro, 280, 300);
+	  this.ctx.drawImage(image, 280, 300);
 	  let play = (e) => {
 	    if (e.keyCode === 13) {
+	            this.setup();
+	            this.drawAll();
 	            this.play();
 	            window.removeEventListener('keydown', play);
 	          }
@@ -528,7 +526,7 @@
 	
 	  hoverGap: 40,
 	  bulletRadius: 3,
-	  alienbulletFrequency: 120,
+	  alienbulletFrequency: 300,
 	
 	  // ship options
 	  shipLives: 5,
@@ -583,7 +581,8 @@
 	  'red_invader',
 	  'alien_bullet',
 	  'green_invader',
-	  'rocks'
+	  'rocks',
+	  'gameover'
 	];
 	
 	const Images = {

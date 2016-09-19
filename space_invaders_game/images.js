@@ -6,7 +6,8 @@ let imageFiles = [
   'red_invader',
   'alien_bullet',
   'green_invader',
-  'rocks'
+  'rocks',
+  'gameover'
 ];
 
 const Images = {

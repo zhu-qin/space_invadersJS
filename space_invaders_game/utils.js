@@ -20,7 +20,7 @@ module.exports = {
 
   hoverGap: 40,
   bulletRadius: 3,
-  alienbulletFrequency: 120,
+  alienbulletFrequency: 300,
 
   // ship options
   shipLives: 5,
