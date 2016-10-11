@@ -12,7 +12,6 @@ if (!localStorage.highScores) {
 }
 
 
-
 let load = function (){
   let game = new Game(ctx);
   game.showMenu();
