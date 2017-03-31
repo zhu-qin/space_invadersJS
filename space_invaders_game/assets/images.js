@@ -6,7 +6,7 @@ let imageFiles = [
   'red_invader',
   'alien_bullet',
   'green_invader',
-  'rocks',
+  'rock',
   'gameover'
 ];
 
@@ -23,7 +23,7 @@ const Images = {
           startGame();
         }
       };
-      img.src = `space_invaders_game/images/${imageName}.png`;
+      img.src = `space_invaders_game/assets/images/${imageName}.png`;
     });
   }
 };
